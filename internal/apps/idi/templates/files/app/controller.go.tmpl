@@ -1,0 +1,23 @@
+package rest
+
+import (
+	"net/http"
+
+	"{{.ProjectName}}/internal/apps/{{.AppName}}/internal/application"
+	"{{.ProjectName}}/internal/idi"
+)
+
+type {{ capitalize .AppName }}Controller struct {
+	*idi.REST
+	app *application.{{ capitalize .AppName }}
+}
+
+func (tc *{{capitalize .AppName}}Controller) find{{capitalize .AppName}}H(w http.ResponseWriter, r *http.Request) {}
+
+func (tc *{{capitalize .AppName}}Controller) create{{capitalize .AppName}}H(w http.ResponseWriter, r *http.Request) {}
+
+func (tc *{{capitalize .AppName}}Controller) get{{capitalize .AppName}}H(w http.ResponseWriter, r *http.Request) {}
+
+func (tc *{{capitalize .AppName}}Controller) update{{capitalize .AppName}}H(w http.ResponseWriter, r *http.Request) {}
+
+func (tc *{{capitalize .AppName}}Controller) delete{{capitalize .AppName}}H(w http.ResponseWriter, r *http.Request) {}

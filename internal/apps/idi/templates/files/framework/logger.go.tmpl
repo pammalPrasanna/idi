@@ -1,0 +1,69 @@
+package idi
+
+import (
+	"io"
+	"log"
+	"log/slog"
+	"net/http"
+	"os"
+
+	"github.com/tomasen/realip"
+)
+
+type slogLogger struct {
+	log *slog.Logger
+}
+
+var _ ILogger = (*slogLogger)(nil)
+
+func NewLogger(out io.Writer) ILogger {
+	if out == nil {
+		out = os.Stdout
+	}
+
+	sl := slog.New(slog.NewJSONHandler(out, nil))
+	return &slogLogger{
+		log: sl,
+	}
+}
+
+func (sl *slogLogger) Debug(msg string, keysAndValues ...interface{}) {
+	sl.log.Debug(msg, keysAndValues...)
+}
+
+func (sl *slogLogger) Info(msg string, keysAndValues ...interface{}) {
+	sl.log.Info(msg, keysAndValues...)
+}
+
+func (sl *slogLogger) Warn(msg string, keysAndValues ...interface{}) {
+	sl.log.Warn(msg, keysAndValues...)
+}
+
+func (sl *slogLogger) Error(msg string, keysAndValues ...interface{}) {
+	sl.log.Error(msg, keysAndValues...)
+}
+
+func (sl *slogLogger) Fatal(msg string, keysAndValues ...interface{}) {
+	sl.log.Error(msg, keysAndValues...)
+	log.Fatal(msg)
+}
+
+func (sl *slogLogger) LoggerM(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mw := newMetricsResponseWriter(w)
+		next.ServeHTTP(mw, r)
+
+		var (
+			ip     = realip.FromRequest(r)
+			method = r.Method
+			url    = r.URL.String()
+			proto  = r.Proto
+		)
+
+		userAttrs := slog.Group("user", "ip", ip)
+		requestAttrs := slog.Group("request", "method", method, "url", url, "proto", proto)
+		responseAttrs := slog.Group("repsonse", "status", mw.StatusCode, "size", mw.BytesCount)
+
+		sl.Info("access", userAttrs, requestAttrs, responseAttrs)
+	})
+}

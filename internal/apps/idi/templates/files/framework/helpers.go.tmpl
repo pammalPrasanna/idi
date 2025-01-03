@@ -1,0 +1,59 @@
+package api
+
+import (
+	"os"
+	"strconv"
+
+	_ "github.com/joho/godotenv/autoload"
+)
+
+type config struct {
+	port    int
+	env     string
+	baseURL string
+	secret  string
+}
+
+const (
+	defaultPort    = 4200
+	defaultENV     = "development"
+	defaultBaseURL = "http://localhost:4200"
+	defaultSecret  = "762898e6b788045334ab11d18e3a9c21e4d91d0399a767f636b78172a72324cc"
+)
+
+var (
+	port    = os.Getenv("PORT")
+	env     = os.Getenv("ENVIRONMENT")
+	baseURL = os.Getenv("BASE_URL")
+	secret  = os.Getenv("SECRET")
+)
+
+func configure() (cfg *config, err error) {
+	cfg = &config{
+		port:    defaultPort,
+		env:     defaultENV,
+		baseURL: defaultBaseURL,
+		secret:  defaultSecret,
+	}
+	if port != "" {
+		if i, err := strconv.Atoi(port); err != nil {
+			cfg.port = i
+		} else {
+			return nil, err
+		}
+	}
+
+	if env != "" {
+		cfg.env = env
+	}
+
+	if baseURL != "" {
+		cfg.baseURL = baseURL
+	}
+
+	if secret != "" {
+		cfg.secret = secret
+	}
+
+	return cfg, nil
+}

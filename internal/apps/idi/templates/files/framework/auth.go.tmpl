@@ -1,0 +1,123 @@
+package idi
+
+import (
+	"context"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/pascaldekloe/jwt"
+)
+
+const authenticatedUserContextKey = "authenticatedUser"
+
+type Auth struct {
+	*REST
+	baseURL string
+	secret  string
+	getUser func(id int) (*IUser, error)
+}
+
+var auth *Auth
+
+func NewAuth(rest *REST, baseURL, secret string) *Auth {
+	if auth != nil {
+		auth = &Auth{}
+		auth.baseURL = baseURL
+		auth.secret = secret
+		auth.REST = rest
+		auth.getUser = func(id int) (*IUser, error) {
+			return nil, nil
+		}
+	}
+
+	return auth
+}
+
+
+func (auth *Auth) contextSetAuthenticatedUser(r *http.Request, user IUser) *http.Request {
+	ctx := context.WithValue(r.Context(), authenticatedUserContextKey, user)
+	return r.WithContext(ctx)
+}
+
+func (auth *Auth) ContextGetAuthenticatedUser(r *http.Request) *IUser {
+	user, ok := r.Context().Value(authenticatedUserContextKey).(*IUser)
+	if !ok {
+		return nil
+	}
+
+	return user
+}
+
+func (auth *Auth) SetUserMethod(fn func(id int) (*IUser, error)) {
+	auth.getUser = fn
+}
+
+func (auth *Auth) AuthenticateM(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Vary", "Authorization")
+
+		authorizationHeader := r.Header.Get("Authorization")
+
+		if authorizationHeader != "" {
+			headerParts := strings.Split(authorizationHeader, " ")
+
+			if len(headerParts) == 2 && headerParts[0] == "Bearer" {
+				token := headerParts[1]
+
+				claims, err := jwt.HMACCheck([]byte(token), []byte(auth.secret))
+				if err != nil {
+					auth.InvalidAuthenticationToken(w, r)
+					return
+				}
+
+				if !claims.Valid(time.Now()) {
+					auth.InvalidAuthenticationToken(w, r)
+					return
+				}
+
+				if claims.Issuer != auth.baseURL {
+					auth.InvalidAuthenticationToken(w, r)
+					return
+				}
+
+				if !claims.AcceptAudience(auth.baseURL) {
+					auth.InvalidAuthenticationToken(w, r)
+					return
+				}
+
+				userID, err := strconv.Atoi(claims.Subject)
+				if err != nil {
+					auth.ServerError(w, r, err)
+					return
+				}
+
+				user, err := auth.getUser(userID)
+				if err != nil {
+					auth.ServerError(w, r, err)
+					return
+				}
+
+				if user != nil {
+					r = auth.contextSetAuthenticatedUser(r, *user)
+				}
+			}
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (auth *Auth) RequireAuthenticatedUser(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authenticatedUser := auth.ContextGetAuthenticatedUser(r)
+
+		if authenticatedUser == nil {
+			auth.AuthenticationRequired(w, r)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}

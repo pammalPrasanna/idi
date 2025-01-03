@@ -1,0 +1,186 @@
+package database
+
+import (
+	"database/sql"
+	"os"
+	"strconv"
+	"time"
+
+	_ "github.com/joho/godotenv/autoload"
+	{{if (eq .DBName "mysql")}}_ "github.com/go-sql-driver/mysql"{{end}}
+	{{if (eq .DBName "postgres")}}_ "github.com/lib/pq"{{end}}
+	{{if (eq .DBName "sqlite3")}}_ "github.com/mattn/go-sqlite3"{{end}}
+)
+
+const (
+	defaultMaxOpenConns    = 25
+	defaultMaxIdleConns    = 25
+	defaultConnMaxIdleTime = 5 * time.Minute
+	defaultConnMaxLifetime = 2 * time.Hour
+)
+
+var (
+	dsn             = os.Getenv("DB_DSN")
+	maxOpenConns    = os.Getenv("DB_MAX_OPEN_CONNS")
+	maxIdleConns    = os.Getenv("DB_MAX_IDLE_CONNS")
+	connMaxIdleTime = os.Getenv("DB_CONN_MAX_IDLE_TIME")
+	connMaxLifetime = os.Getenv("DB_CONN_MAX_LIFETIME")
+)
+
+{{if (eq .DBName "mysql")}}
+func Mysql() (*sql.DB, error) {
+	conn, err := sql.Open("mysql", dsn)
+	if err != nil {
+		return nil, err
+	}
+
+	if maxOpenConns != "" {
+		if i, err := strconv.Atoi(maxOpenConns); err != nil {
+			conn.SetMaxOpenConns(i)
+		} else {
+			return nil, err
+		}
+	} else {
+		conn.SetMaxOpenConns(defaultMaxOpenConns)
+	}
+
+	if maxIdleConns != "" {
+		if i, err := strconv.Atoi(maxIdleConns); err != nil {
+			conn.SetMaxIdleConns(i)
+		} else {
+			return nil, err
+		}
+	} else {
+		conn.SetMaxIdleConns(defaultMaxIdleConns)
+	}
+
+	if connMaxIdleTime != "" {
+		if i, err := strconv.Atoi(connMaxIdleTime); err != nil {
+			conn.SetConnMaxIdleTime(time.Duration(i * int(time.Minute)))
+		} else {
+			return nil, err
+		}
+	} else {
+		conn.SetConnMaxIdleTime(defaultMaxIdleConns)
+	}
+
+	if connMaxLifetime != "" {
+		if i, err := strconv.Atoi(connMaxLifetime); err != nil {
+			conn.SetConnMaxLifetime(time.Duration(i * int(time.Minute)))
+		} else {
+			return nil, err
+		}
+	} else {
+		conn.SetConnMaxLifetime(defaultConnMaxLifetime)
+	}
+
+
+	return conn, nil
+}
+{{end}}
+
+
+{{if (eq .DBName "postgres")}}
+func Postgres() (*sql.DB, error) {
+	conn, err := sql.Open("psql", dsn)
+	if err != nil {
+		return nil, err
+	}
+
+	if maxOpenConns != "" {
+		if i, err := strconv.Atoi(maxOpenConns); err != nil {
+			conn.SetMaxOpenConns(i)
+		} else {
+			return nil, err
+		}
+	} else {
+		conn.SetMaxOpenConns(defaultMaxOpenConns)
+	}
+
+	if maxIdleConns != "" {
+		if i, err := strconv.Atoi(maxIdleConns); err != nil {
+			conn.SetMaxIdleConns(i)
+		} else {
+			return nil, err
+		}
+	} else {
+		conn.SetMaxIdleConns(defaultMaxIdleConns)
+	}
+
+	if connMaxIdleTime != "" {
+		if i, err := strconv.Atoi(connMaxIdleTime); err != nil {
+			conn.SetConnMaxIdleTime(time.Duration(i * int(time.Minute)))
+		} else {
+			return nil, err
+		}
+	} else {
+		conn.SetConnMaxIdleTime(defaultMaxIdleConns)
+	}
+
+	if connMaxLifetime != "" {
+		if i, err := strconv.Atoi(connMaxLifetime); err != nil {
+			conn.SetConnMaxLifetime(time.Duration(i * int(time.Minute)))
+		} else {
+			return nil, err
+		}
+	} else {
+		conn.SetConnMaxLifetime(defaultConnMaxLifetime)
+	}
+
+
+	return conn, nil
+}
+{{end}}
+
+
+{{if (eq .DBName "sqlite3")}}
+func Sqlite3() (*sql.DB, error) {
+	conn, err := sql.Open("sqlite3", dsn)
+	if err != nil {
+		return nil, err
+	}
+
+	if maxOpenConns != "" {
+		if i, err := strconv.Atoi(maxOpenConns); err != nil {
+			conn.SetMaxOpenConns(i)
+		} else {
+			return nil, err
+		}
+	} else {
+		conn.SetMaxOpenConns(defaultMaxOpenConns)
+	}
+
+	if maxIdleConns != "" {
+		if i, err := strconv.Atoi(maxIdleConns); err != nil {
+			conn.SetMaxIdleConns(i)
+		} else {
+			return nil, err
+		}
+	} else {
+		conn.SetMaxIdleConns(defaultMaxIdleConns)
+	}
+
+	if connMaxIdleTime != "" {
+		if i, err := strconv.Atoi(connMaxIdleTime); err != nil {
+			conn.SetConnMaxIdleTime(time.Duration(i * int(time.Minute)))
+		} else {
+			return nil, err
+		}
+	} else {
+		conn.SetConnMaxIdleTime(defaultMaxIdleConns)
+	}
+
+	if connMaxLifetime != "" {
+		if i, err := strconv.Atoi(connMaxLifetime); err != nil {
+			conn.SetConnMaxLifetime(time.Duration(i * int(time.Minute)))
+		} else {
+			return nil, err
+		}
+	} else {
+		conn.SetConnMaxLifetime(defaultConnMaxLifetime)
+	}
+
+
+	return conn, nil
+}
+{{end}}

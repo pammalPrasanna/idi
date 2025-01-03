@@ -1,0 +1,29 @@
+package application
+
+import (
+	{{if (ne .DBName "")}}"{{.ProjectName}}/internal/apps/{{.AppName}}/internal/application/ports"{{end}}
+	"{{.ProjectName}}/internal/idi"
+)
+
+type {{ capitalize .AppName }} struct {
+	RootApp  idi.IApp
+	{{if (ne .DBName "")}}
+	Repo ports.I{{capitalize .AppName}}Repository
+	{{end}}
+
+}
+
+{{if (ne .DBName "")}}
+func New(rootApp idi.IApp, db ports.I{{capitalize .AppName}}Repository) *{{capitalize .AppName}} {
+	return &{{capitalize .AppName}}{
+		RootApp:  rootApp,
+		Repo: db,
+	}
+}
+{{else}}
+func New(rootApp idi.IApp) *{{capitalize .AppName}} {
+	return &{{capitalize .AppName}}{
+		rootApp:  rootApp,
+	}
+}
+{{end}}

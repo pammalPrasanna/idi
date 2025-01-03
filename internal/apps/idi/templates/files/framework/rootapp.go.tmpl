@@ -1,0 +1,43 @@
+package api
+
+import (
+	{{if (ne .DBName "")}}"database/sql"{{end}}
+
+	"{{.ProjectName}}/internal/idi"
+
+	"github.com/julienschmidt/httprouter"
+)
+
+type api struct {
+	{{if (eq .DBName "mysql")}}mysql *sql.DB{{else if (eq .DBName "postgres")}}postgres *sql.DB{{else if (eq .DBName "sqlite3")}}sqlite3 *sql.DB{{end}}
+	mux    *httprouter.Router
+	log    idi.ILogger
+}
+
+var _ idi.IApp = (*api)(nil)
+
+func (t api) Mux() *httprouter.Router {
+	return t.mux
+}
+
+{{if (eq .DBName "mysql")}}
+func (t api) Mysql() *sql.DB {
+	return t.mysql
+}
+{{end}}
+
+{{if (eq .DBName "postgres")}}
+func (t api) Postgres() *sql.DB {
+	return t.postgres
+}
+{{end}}
+
+{{if (eq .DBName "sqlite3")}}
+func (t api) Sqlite3() *sql.DB {
+	return t.sqlite3
+}
+{{end}}
+
+func (t api) Logger() idi.ILogger {
+	return t.log
+}

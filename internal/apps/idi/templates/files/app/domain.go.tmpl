@@ -1,0 +1,12 @@
+package domain
+
+import (
+	"{{.ProjectName}}/internal/dtos"
+)
+
+type {{capitalize .AppName}} struct {}
+
+func New{{capitalize .AppName}}(ctp dtos.Create{{capitalize .AppName}}Params) (*{{capitalize .AppName}}, error) {
+
+	return &{{capitalize .AppName}}{}, nil
+}

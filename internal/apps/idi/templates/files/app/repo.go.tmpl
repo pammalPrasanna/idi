@@ -1,0 +1,41 @@
+package {{.DBName}}
+
+import (
+	"context"
+	"database/sql"
+
+	"{{.ProjectName}}/internal/apps/{{.AppName}}/internal/application/ports"
+	"{{.ProjectName}}/internal/dtos"
+)
+
+type {{capitalize .DBName}}Repository struct {
+	db *sql.DB
+}
+
+var _ ports.I{{capitalize .AppName}}Repository = (*{{capitalize .DBName}}Repository)(nil)
+
+func NewRepository(db *sql.DB) *{{capitalize .DBName}}Repository {
+	return &{{capitalize .DBName}}Repository{
+		db,
+	}
+}
+
+func (t {{capitalize .DBName}}Repository) Get{{capitalize .AppName}}(ctx context.Context, arg dtos.Get{{capitalize .AppName}}Params) error {
+	return nil
+}
+
+func (t {{capitalize .DBName}}Repository) Find{{capitalize .AppName}}(ctx context.Context, arg dtos.Find{{capitalize .AppName}}Params) error {
+	return nil
+}
+
+func (t {{capitalize .DBName}}Repository) Create{{capitalize .AppName}}(ctx context.Context, arg dtos.Create{{capitalize .AppName}}Params) error {
+	return nil
+}
+
+func (t {{capitalize .DBName}}Repository) Update{{capitalize .AppName}}(ctx context.Context, arg dtos.Update{{capitalize .AppName}}Params) error {
+	return nil
+}
+
+func (t {{capitalize .DBName}}Repository) Delete{{capitalize .AppName}}(ctx context.Context, arg dtos.Delete{{capitalize .AppName}}Params) error {
+	return nil
+}

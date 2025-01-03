@@ -1,0 +1,27 @@
+package idi
+
+import (
+	{{if (ne .DBName "")}}"database/sql"{{end}}
+	"net/http"
+	
+	"github.com/julienschmidt/httprouter"
+)
+
+type IApp interface {
+	{{if (eq .DBName "mysql")}}Mysql() *sql.DB{{else if (eq .DBName "postgres")}}Postgres() *sql.DB{{else if (eq .DBName "sqlite3")}}Sqlite3() *sql.DB{{end}}
+	Mux() *httprouter.Router
+	Logger() ILogger
+}
+
+type ILogger interface {
+	Debug(msg string, keysAndValues ...interface{})
+	Info(msg string, keysAndValues ...interface{})
+	Warn(msg string, keysAndValues ...interface{})
+	Error(msg string, keysAndValues ...interface{})
+	Fatal(msg string, keysAndValues ...interface{})
+	LoggerM(next http.Handler) http.Handler
+}
+
+type IUser struct {
+	ID int64
+}

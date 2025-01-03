@@ -1,0 +1,15 @@
+package ports
+
+import (
+	"context"
+
+	"{{.ProjectName}}/internal/dtos"
+)
+
+type I{{capitalize .AppName}}Repository interface {
+	Get{{capitalize .AppName}}(ctx context.Context, arg dtos.Get{{capitalize .AppName}}Params) error
+	Find{{capitalize .AppName}}(ctx context.Context, arg dtos.Find{{capitalize .AppName}}Params) error
+	Create{{capitalize .AppName}}(ctx context.Context, arg dtos.Create{{capitalize .AppName}}Params) error
+	Update{{capitalize .AppName}}(ctx context.Context, arg dtos.Update{{capitalize .AppName}}Params) error
+	Delete{{capitalize .AppName}}(ctx context.Context, arg dtos.Delete{{capitalize .AppName}}Params) error
+}

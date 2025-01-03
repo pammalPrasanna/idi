@@ -1,0 +1,23 @@
+package rest
+
+import (
+	"net/http"
+
+	"{{.ProjectName}}/internal/apps/{{.AppName}}/internal/application"
+	"{{.ProjectName}}/internal/idi"
+
+
+	"github.com/julienschmidt/httprouter"
+)
+
+func RegisterRoutes(app *application.{{ capitalize .AppName }}, rest *idi.REST, mux *httprouter.Router) {
+	ctrlr := &{{capitalize .AppName}}Controller{}
+	ctrlr.REST = rest
+	ctrlr.app = app
+
+	mux.HandlerFunc(http.MethodGet, "/{{.AppName}}", ctrlr.find{{capitalize .AppName}}H)
+	mux.HandlerFunc(http.MethodGet, "/{{.AppName}}/:id", ctrlr.get{{capitalize .AppName}}H)
+	mux.HandlerFunc(http.MethodPost, "/{{.AppName}}", ctrlr.create{{capitalize .AppName}}H)
+	mux.HandlerFunc(http.MethodPut, "/{{.AppName}}", ctrlr.update{{capitalize .AppName}}H)
+	mux.HandlerFunc(http.MethodDelete, "/{{.AppName}}", ctrlr.delete{{capitalize .AppName}}H)
+}
