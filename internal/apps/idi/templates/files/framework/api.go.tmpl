@@ -4,7 +4,7 @@ import (
 	{{if (ne .AppName "")}}
 	"{{.ProjectName}}/internal/apps/{{.AppName}}"
 	{{else}}
-	// "{{.ProjectName}}/internal/apps/someapp"
+	// "{{.ProjectName}}/internal/apps/{{.AppName}}"
 	{{end}}
 	"{{.ProjectName}}/internal/idi"
 
@@ -58,7 +58,7 @@ func Main(logger idi.ILogger) error {
 	{{if (ne .AppName "")}}
 	{{.AppName}}.InitApp(rootApp)
 	{{else}}
-	// someapp.InitApp(rootApp)
+	// {{.AppName}}.InitApp(rootApp)
 	{{end}}
 	// start the server
 	return srv.ServeHTTP()

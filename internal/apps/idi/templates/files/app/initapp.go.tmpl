@@ -2,9 +2,9 @@ package {{.AppName}}
 
 import (
 	rest "{{.ProjectName}}/internal/apps/{{.AppName}}/internal/adapters/{{.RouterName}}"
-	"{{.ProjectName}}/internal/apps/someapp/internal/adapters/{{.DBName}}"
+	"{{.ProjectName}}/internal/apps/{{.AppName}}/internal/adapters/{{.DBName}}"
 	"{{.ProjectName}}/internal/idi"
-	"{{.ProjectName}}/internal/apps/someapp/internal/application"
+	"{{.ProjectName}}/internal/apps/{{.AppName}}/internal/application"
 )
 
 var {{.AppName}}App *application.{{capitalize .AppName}}

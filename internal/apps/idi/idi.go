@@ -2,7 +2,6 @@ package idi
 
 import (
 	"errors"
-	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -76,10 +75,7 @@ func (i Idi) Create() error {
 				return err
 			}
 			i.projectPath = prjDir
-			fmt.Println(filepath.ToSlash(prjDir))
-
 			dirs := strings.Split(i.projectPath, string(os.PathSeparator))
-
 			i.projectName = dirs[len(dirs)-1]
 		}
 
@@ -122,8 +118,7 @@ func (i Idi) idiProjectExists() (string, error) {
 	appsDir := filepath.Join(cwd, "/internal/apps")
 
 	if _, err := os.Stat(appsDir); errors.Is(err, fs.ErrNotExist) {
-		return "", errors.New(`
-		idi project structure not found:\n
+		return "", errors.New(`idi project structure not found:
 		1. '{current_working_directory}/internal/apps'
 		2. '{current_working_directory}/internal/dtos'`)
 	}
