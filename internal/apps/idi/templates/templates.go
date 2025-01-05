@@ -6,7 +6,7 @@ type itemplate struct {
 }
 
 var frameworkFolders = map[string]string{
-	"cmd":            "cmd/{project_name}/api",
+	"cmd":            "cmd/api",
 	"apps":           "internal/apps",
 	"dtos":           "internal/dtos",
 	"framework":      "internal/idi",
@@ -16,19 +16,19 @@ var frameworkFolders = map[string]string{
 var frameworkDefaultFiles = map[string]*itemplate{
 	// cmd files start
 	"api.go": {
-		path:    "cmd/{project_name}/api/api.go",
+		path:    "cmd/api/api.go",
 		content: apiFile,
 	},
 	"config.go": {
-		path:    "cmd/{project_name}/api/helpers.go",
+		path:    "cmd/api/helpers.go",
 		content: helpersFile,
 	},
 	"root.app.go": {
-		path:    "cmd/{project_name}/api/{project_name}.root.go",
+		path:    "cmd/api/{project_name}.root.go",
 		content: rootAppFile,
 	},
 	"main.go": {
-		path:    "cmd/{project_name}/main.go",
+		path:    "cmd/main.go",
 		content: mainFile,
 	},
 	// cmd files ends
@@ -142,9 +142,9 @@ var appDefaultFiles = map[string]*itemplate{
 
 // framework files below
 // "main.go": "cmd/{project_name}/main.go",
-// "api.go": "cmd/{project_name}/api/api.go",
-// "helpers.go": "cmd/{project_name}/api/helpers.go",
-// "app.go": "cmd/{project_name}/api/{project_name}.app.go",
+// "api.go": "cmd/api/api.go",
+// "helpers.go": "cmd/api/helpers.go",
+// "app.go": "cmd/api/{project_name}.app.go",
 
 // "errors.go": "internal/idi/errors.go",
 // "json.go": "internal/idi/json.go",
