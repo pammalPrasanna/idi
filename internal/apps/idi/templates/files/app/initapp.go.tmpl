@@ -2,7 +2,7 @@ package {{.AppName}}
 
 import (
 	rest "{{.ProjectName}}/internal/apps/{{.AppName}}/internal/adapters/{{.RouterName}}"
-	"{{.ProjectName}}/internal/apps/{{.AppName}}/internal/adapters/{{.DBName}}"
+	{{if (ne .DBName "")}}"{{.ProjectName}}/internal/apps/{{.AppName}}/internal/adapters/{{.DBName}}"{{end}}
 	"{{.ProjectName}}/internal/idi"
 	"{{.ProjectName}}/internal/apps/{{.AppName}}/internal/application"
 )

@@ -23,7 +23,7 @@ func New(rootApp idi.IApp, db ports.I{{capitalize .AppName}}Repository) *{{capit
 {{else}}
 func New(rootApp idi.IApp) *{{capitalize .AppName}} {
 	return &{{capitalize .AppName}}{
-		rootApp:  rootApp,
+		RootApp:  rootApp,
 	}
 }
 {{end}}

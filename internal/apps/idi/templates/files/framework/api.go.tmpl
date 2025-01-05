@@ -4,7 +4,7 @@ import (
 	{{if (ne .AppName "")}}
 	"{{.ProjectName}}/internal/apps/{{.AppName}}"
 	{{else}}
-	// "{{.ProjectName}}/internal/apps/{{.AppName}}"
+	// "{{.ProjectName}}/internal/apps/someapp"
 	{{end}}
 	"{{.ProjectName}}/internal/idi"
 
@@ -20,7 +20,6 @@ func Main(logger idi.ILogger) error {
 		return err
 	}
 
-	
 	{{if (ne .DBName "")}}// open DB connection(s)
 	{{if (eq .DBName "mysql")}}conn, err := infra.Mysql()
 		{{else if (eq .DBName "postgres")}}conn, err := infra.Postgres()
@@ -31,7 +30,6 @@ func Main(logger idi.ILogger) error {
 	}
 	defer conn.Close()
 	{{end}}
-	
 	
 	// create server
 	rest := idi.NewREST(logger)
@@ -58,7 +56,7 @@ func Main(logger idi.ILogger) error {
 	{{if (ne .AppName "")}}
 	{{.AppName}}.InitApp(rootApp)
 	{{else}}
-	// {{.AppName}}.InitApp(rootApp)
+	// someapp.InitApp(rootApp)
 	{{end}}
 	// start the server
 	return srv.ServeHTTP()
