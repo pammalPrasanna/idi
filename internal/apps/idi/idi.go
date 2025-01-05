@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 
 	"github.com/pammalPrasanna/idi/internal/apps/idi/templates"
 	"github.com/pammalPrasanna/idi/internal/utils"
@@ -70,12 +71,16 @@ func (i Idi) Create() error {
 	if i.appName != i.none {
 		// ensure -ca command is executed from idi project folder
 		if i.projectName == i.none {
-			fmt.Println("project name empty")
 			prjDir, err := i.idiProjectExists()
 			if err != nil {
 				return err
 			}
 			i.projectPath = prjDir
+			fmt.Println(filepath.ToSlash(prjDir))
+
+			dirs := strings.Split(i.projectPath, string(os.PathSeparator))
+
+			i.projectName = dirs[len(dirs)-1]
 		}
 
 		// OR
@@ -114,16 +119,13 @@ func (i Idi) idiProjectExists() (string, error) {
 		return "", err
 	}
 
-	goMOD := filepath.Join(cwd, "go.mod")
-
-	if _, err := os.Stat(goMOD); errors.Is(err, fs.ErrNotExist) {
-		return "", errors.New("go project not found")
-	}
-
 	appsDir := filepath.Join(cwd, "/internal/apps")
 
 	if _, err := os.Stat(appsDir); errors.Is(err, fs.ErrNotExist) {
-		return "", errors.New("idi project structure not found")
+		return "", errors.New(`
+		idi project structure not found:\n
+		1. '{current_working_directory}/internal/apps'
+		2. '{current_working_directory}/internal/dtos'`)
 	}
 
 	return cwd, nil
