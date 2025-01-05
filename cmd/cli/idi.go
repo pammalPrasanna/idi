@@ -35,5 +35,8 @@ func Main() error {
 		return err
 	}
 
+	if idi != nil {
+		return nil
+	}
 	return ErrNoCommand
 }

@@ -2,6 +2,8 @@ package idi
 
 import (
 	"errors"
+	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"slices"
@@ -67,6 +69,15 @@ func (i Idi) Create() error {
 
 	if i.appName != i.none {
 		// ensure -ca command is executed from idi project folder
+		if i.projectName == i.none {
+			fmt.Println("project name empty")
+			prjDir, err := i.idiProjectExists()
+			if err != nil {
+				return err
+			}
+			i.projectPath = prjDir
+		}
+
 		// OR
 		// -ca command is executed along with -cp command
 		// validate app name already doesn't exists
@@ -95,4 +106,25 @@ func validateRouterName(routerName string) error {
 		return errors.New("db not found: " + routerName)
 	}
 	return nil
+}
+
+func (i Idi) idiProjectExists() (string, error) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+
+	goMOD := filepath.Join(cwd, "go.mod")
+
+	if _, err := os.Stat(goMOD); errors.Is(err, fs.ErrNotExist) {
+		return "", errors.New("go project not found")
+	}
+
+	appsDir := filepath.Join(cwd, "/internal/apps")
+
+	if _, err := os.Stat(appsDir); errors.Is(err, fs.ErrNotExist) {
+		return "", errors.New("idi project structure not found")
+	}
+
+	return cwd, nil
 }
