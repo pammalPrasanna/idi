@@ -1,123 +1,50 @@
-package idi
+package lib
 
 import (
 	"context"
+	"errors"
 	"net/http"
-	"strconv"
-	"strings"
-	"time"
 
-	"github.com/pascaldekloe/jwt"
+	"golang.org/x/crypto/bcrypt"
 )
 
-const authenticatedUserContextKey = "authenticatedUser"
+type contextKey string
 
-type Auth struct {
-	*REST
-	baseURL string
-	secret  string
-	getUser func(id int) (*IUser, error)
-}
+// should not use built-in type string as key for value; define your own type to avoid collisions (SA1029)
+const authenticatedUserContextKey = contextKey("authenticatedUser")
 
-var auth *Auth
-
-func NewAuth(rest *REST, baseURL, secret string) *Auth {
-	if auth != nil {
-		auth = &Auth{}
-		auth.baseURL = baseURL
-		auth.secret = secret
-		auth.REST = rest
-		auth.getUser = func(id int) (*IUser, error) {
-			return nil, nil
-		}
-	}
-
-	return auth
-}
-
-
-func (auth *Auth) contextSetAuthenticatedUser(r *http.Request, user IUser) *http.Request {
+func (i *idi) contextSetAuthenticatedUser(r *http.Request, user *IUser) *http.Request {
 	ctx := context.WithValue(r.Context(), authenticatedUserContextKey, user)
 	return r.WithContext(ctx)
 }
 
-func (auth *Auth) ContextGetAuthenticatedUser(r *http.Request) *IUser {
-	user, ok := r.Context().Value(authenticatedUserContextKey).(*IUser)
-	if !ok {
-		return nil
+func (i *idi) ContextGetAuthenticatedUser(r *http.Request) *IUser {
+	return r.Context().Value(authenticatedUserContextKey).(*IUser)
+}
+
+func (i *idi) SetUserByIDMethod(fn func(id int) (*IUser, error)) {
+	i.customGetUserByID = fn
+}
+
+func (i *idi) Hash(plaintextPassword string) (string, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(plaintextPassword), 12)
+	if err != nil {
+		return "", err
 	}
 
-	return user
+	return string(hashedPassword), nil
 }
 
-func (auth *Auth) SetUserMethod(fn func(id int) (*IUser, error)) {
-	auth.getUser = fn
-}
-
-func (auth *Auth) AuthenticateM(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Vary", "Authorization")
-
-		authorizationHeader := r.Header.Get("Authorization")
-
-		if authorizationHeader != "" {
-			headerParts := strings.Split(authorizationHeader, " ")
-
-			if len(headerParts) == 2 && headerParts[0] == "Bearer" {
-				token := headerParts[1]
-
-				claims, err := jwt.HMACCheck([]byte(token), []byte(auth.secret))
-				if err != nil {
-					auth.InvalidAuthenticationToken(w, r)
-					return
-				}
-
-				if !claims.Valid(time.Now()) {
-					auth.InvalidAuthenticationToken(w, r)
-					return
-				}
-
-				if claims.Issuer != auth.baseURL {
-					auth.InvalidAuthenticationToken(w, r)
-					return
-				}
-
-				if !claims.AcceptAudience(auth.baseURL) {
-					auth.InvalidAuthenticationToken(w, r)
-					return
-				}
-
-				userID, err := strconv.Atoi(claims.Subject)
-				if err != nil {
-					auth.ServerError(w, r, err)
-					return
-				}
-
-				user, err := auth.getUser(userID)
-				if err != nil {
-					auth.ServerError(w, r, err)
-					return
-				}
-
-				if user != nil {
-					r = auth.contextSetAuthenticatedUser(r, *user)
-				}
-			}
+func (i *idi) CompareHashAndPassword(plaintextPassword, hashedPassword string) (bool, error) {
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(plaintextPassword))
+	if err != nil {
+		switch {
+		case errors.Is(err, bcrypt.ErrMismatchedHashAndPassword):
+			return false, nil
+		default:
+			return false, err
 		}
+	}
 
-		next.ServeHTTP(w, r)
-	})
-}
-
-func (auth *Auth) RequireAuthenticatedUser(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authenticatedUser := auth.ContextGetAuthenticatedUser(r)
-
-		if authenticatedUser == nil {
-			auth.AuthenticationRequired(w, r)
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
+	return true, nil
 }

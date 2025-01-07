@@ -6,58 +6,16 @@ import (
 	{{else}}
 	// "{{.ProjectName}}/internal/apps/someapp"
 	{{end}}
-	"{{.ProjectName}}/internal/idi"
-
-	{{if (ne .DBName "")}}
-	infra "{{.ProjectName}}/internal/infrastructure"
-	{{end}}
+	"{{.ProjectName}}/internal/lib"
 )
 
-func Main(logger idi.ILogger) error {
-	// parse configs
-	configs, err := configure()
-	if err != nil {
-		return err
-	}
-
-	{{if (ne .DBName "")}}// open DB connection(s)
-	{{if (eq .DBName "mysql")}}conn, err := infra.Mysql()
-		{{else if (eq .DBName "postgres")}}conn, err := infra.Postgres()
-		{{else if (eq .DBName "sqlite3")}}conn, err := infra.Sqlite3()
-	{{end}}
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
-	{{end}}
-	
-	// create server
-	rest := idi.NewREST(logger)
-	auth := idi.NewAuth(rest, configs.baseURL, configs.secret)
-	srv, err := idi.NewServer(configs.port, logger)
-	if err != nil {
-		return err
-	}
-
-	// add middlewares
-	srv.WrapIt(auth.AuthenticateM, rest.RecoverPanicM, logger.LoggerM, rest.CorsM)
-
-	// creating root app
-	rootApp := &api{
-		{{if (eq .DBName "mysql")}}mysql: conn,
-		{{else if (eq .DBName "postgres")}}postgres: conn,
-		{{else if (eq .DBName "sqlite3")}}sqlite3: conn,
-		{{end}}
-		mux:    srv.Mux,
-		log:    logger,
-	}
-
+func Main(idi lib.IApp) error {
 	// inject root app to other apps
 	{{if (ne .AppName "")}}
 	{{.AppName}}.InitApp(rootApp)
 	{{else}}
 	// someapp.InitApp(rootApp)
 	{{end}}
-	// start the server
-	return srv.ServeHTTP()
+
+	return idi.ServeHTTP()
 }

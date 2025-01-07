@@ -15,15 +15,19 @@ type Templater struct {
 	DBName      string
 	AppName     string
 	RouterName  string
+	IsAuth      bool
+	IsPaseto    bool
 }
 
-func New(projectPath, projectName, dbName, appName, routerName string) *Templater {
+func New(projectPath, projectName, dbName, appName, routerName string, isAuth, isPaseto bool) *Templater {
 	return &Templater{
 		projectPath: projectPath,
 		ProjectName: projectName,
 		DBName:      dbName,
 		AppName:     appName,
 		RouterName:  routerName,
+		IsAuth:      isAuth,
+		IsPaseto:    isPaseto,
 	}
 }
 
@@ -52,6 +56,23 @@ func (t Templater) CreateFramework() error {
 		return err
 	}
 
+	// authentication
+	if t.IsAuth {
+		// create auth folder
+		if err := t.createFolders(t.projectPath, authFolders); err != nil {
+			return err
+		}
+
+		if t.IsPaseto {
+			if err := t.createFiles(t.projectPath, pasetoFiles); err != nil {
+				return err
+			}
+		} else {
+			if err := t.createFiles(t.projectPath, jwtFiles); err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
 

@@ -1,16 +1,45 @@
-package idi
+package lib
 
 import (
-	{{if (ne .DBName "")}}"database/sql"{{end}}
+	"database/sql"
 	"net/http"
-	
+{{if .IsAuth}}
+	"{{.ProjectName}}/internal/lib/auth"
+{{end}}
 	"github.com/julienschmidt/httprouter"
 )
 
 type IApp interface {
-	{{if (eq .DBName "mysql")}}Mysql() *sql.DB{{else if (eq .DBName "postgres")}}Postgres() *sql.DB{{else if (eq .DBName "sqlite3")}}Sqlite3() *sql.DB{{end}}
-	Mux() *httprouter.Router
+	Sqlite3() *sql.DB
 	Logger() ILogger
+
+	Mux() *httprouter.Router
+	ServeHTTP() error
+
+	// JSON helpers
+	JSON(w http.ResponseWriter, status int, data any) error
+	JSONWithHeaders(w http.ResponseWriter, status int, data any, headers http.Header) error
+	DecodeJSON(w http.ResponseWriter, r *http.Request, dst interface{}) error
+	DecodeJSONStrict(w http.ResponseWriter, r *http.Request, dst interface{}) error
+
+{{if .IsAuth}}
+	// Auth helpers
+	Hash(plaintextPassword string) (string, error)
+	CompareHashAndPassword(plaintextPassword, hashedPassword string) (bool, error)
+	VerifyToken(token string) (string, error)
+	CreateToken(userID int) (*auth.Token, error)
+	RequireAuthenticatedUser(next http.HandlerFunc) http.HandlerFunc
+	GetUserById(id int) (*IUser, error)
+	SetUserByIDMethod(fn func(id int) (*IUser, error))
+{{end}}
+	// rest helpers
+	BadRequest(w http.ResponseWriter, r *http.Request, err error)         // 400
+	AuthenticationRequired(w http.ResponseWriter, r *http.Request)        // 401
+	InvalidAuthenticationToken(w http.ResponseWriter, r *http.Request)    // 401
+	NotFound(w http.ResponseWriter, r *http.Request)                      // 404
+	MethodNotAllowed(w http.ResponseWriter, r *http.Request)              // 405
+	FailedValidation(w http.ResponseWriter, r *http.Request, v Validator) // 422
+	ServerError(w http.ResponseWriter, r *http.Request, err error)        // 500
 }
 
 type ILogger interface {
@@ -19,7 +48,6 @@ type ILogger interface {
 	Warn(msg string, keysAndValues ...interface{})
 	Error(msg string, keysAndValues ...interface{})
 	Fatal(msg string, keysAndValues ...interface{})
-	LoggerM(next http.Handler) http.Handler
 }
 
 type IUser struct {

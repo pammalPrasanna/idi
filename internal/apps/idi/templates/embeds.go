@@ -40,8 +40,8 @@ var mainFile []byte
 //go:embed files/framework/api.go.tmpl
 var apiFile []byte
 
-//go:embed files/framework/helpers.go.tmpl
-var helpersFile []byte
+//go:embed files/framework/configs.go.tmpl
+var configsFile []byte
 
 //go:embed files/framework/rootapp.go.tmpl
 var rootAppFile []byte
@@ -75,5 +75,20 @@ var authFile []byte
 
 //go:embed files/framework/metrics.go.tmpl
 var metricsFile []byte
+
+//go:embed files/framework/imaker.go.tmpl
+var imakerFile []byte
+
+//go:embed files/framework/pasetomaker.go.tmpl
+var pasetoMakerFile []byte
+
+//go:embed files/framework/jwtmaker.go.tmpl
+var jwtMakerFile []byte
+
+//go:embed files/framework/idi.go.tmpl
+var idiFile []byte
+
+//go:embed files/framework/middlewares.go.tmpl
+var middlewaresFile []byte
 
 // framework files end

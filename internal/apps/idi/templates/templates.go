@@ -6,10 +6,11 @@ type itemplate struct {
 }
 
 var frameworkFolders = map[string]string{
-	"cmd":            "cmd/api",
-	"apps":           "internal/apps",
-	"dtos":           "internal/dtos",
-	"framework":      "internal/idi",
+	"cmd":  "cmd/api",
+	"apps": "internal/apps",
+	"dtos": "internal/dtos",
+	"lib":  "internal/lib",
+
 	"infrastructure": "internal/infrastructure",
 }
 
@@ -19,14 +20,6 @@ var frameworkDefaultFiles = map[string]*itemplate{
 		path:    "cmd/api/api.go",
 		content: apiFile,
 	},
-	"config.go": {
-		path:    "cmd/api/helpers.go",
-		content: helpersFile,
-	},
-	"root.app.go": {
-		path:    "cmd/api/{project_name}.root.go",
-		content: rootAppFile,
-	},
 	"main.go": {
 		path:    "cmd/main.go",
 		content: mainFile,
@@ -34,41 +27,50 @@ var frameworkDefaultFiles = map[string]*itemplate{
 	// cmd files ends
 
 	// framework files start
+	"configs.go": {
+		path:    "internal/lib/configs.go",
+		content: configsFile,
+	},
 	"errors.go": {
-		path:    "internal/idi/errors.go",
+		path:    "internal/lib/errors.go",
 		content: errorsFile,
 	},
 	"json.go": {
-		path:    "internal/idi/json.go",
+		path:    "internal/lib/json.go",
 		content: jsonFile,
 	},
 	"server.go": {
-		path:    "internal/idi/server.go",
+		path:    "internal/lib/server.go",
 		content: serverFile,
 	},
 	"logger.go": {
-		path:    "internal/idi/slogger.go",
+		path:    "internal/lib/slogger.go",
 		content: loggerFile,
 	},
 	"types.go": {
-		path:    "internal/idi/types.go",
+		path:    "internal/lib/types.go",
 		content: typesFile,
 	},
 	"validator.go": {
-		path:    "internal/idi/validator.go",
+		path:    "internal/lib/validator.go",
 		content: validatorFile,
 	},
-	"auth.go": {
-		path:    "internal/idi/auth.go",
-		content: authFile,
-	},
+
 	"rest.go": {
-		path:    "internal/idi/rest.go",
+		path:    "internal/lib/rest.go",
 		content: restFile,
 	},
 	"metrics.go": {
-		path:    "internal/idi/metrics.go",
+		path:    "internal/lib/metrics.go",
 		content: metricsFile,
+	},
+	"idi.go": {
+		path:    "internal/lib/idi.go",
+		content: idiFile,
+	},
+	"middlewares.go": {
+		path:    "internal/lib/middlewares.go",
+		content: middlewaresFile,
 	},
 	// framework files end
 }
@@ -77,6 +79,40 @@ var dbFiles = map[string]*itemplate{
 	"db.go": {
 		path:    "internal/infrastructure/db.go",
 		content: dbFile,
+	},
+}
+
+var authFolders = map[string]string{
+	"auth": "internal/lib/auth",
+}
+
+var jwtFiles = map[string]*itemplate{
+	"imaker.go": {
+		path:    "/internal/lib/auth/imaker.go",
+		content: imakerFile,
+	},
+	"auth.go": {
+		path:    "internal/lib/auth.go",
+		content: authFile,
+	},
+	"jwt_maker.go": {
+		path:    "/internal/lib/auth/jwt_maker.go",
+		content: jwtMakerFile,
+	},
+}
+
+var pasetoFiles = map[string]*itemplate{
+	"imaker.go": {
+		path:    "/internal/lib/auth/imaker.go",
+		content: imakerFile,
+	},
+	"auth.go": {
+		path:    "internal/lib/auth.go",
+		content: authFile,
+	},
+	"paseto_maker.go": {
+		path:    "/internal/lib/auth/paseto_maker.go",
+		content: pasetoMakerFile,
 	},
 }
 
@@ -146,10 +182,10 @@ var appDefaultFiles = map[string]*itemplate{
 // "helpers.go": "cmd/api/helpers.go",
 // "app.go": "cmd/api/{project_name}.app.go",
 
-// "errors.go": "internal/idi/errors.go",
-// "json.go": "internal/idi/json.go",
-// "server.go": "internal/idi/server.go",
-// "logger.go": "internal/idi/slogger.go",
-// "types.go": "internal/idi/types.go",
+// "errors.go": "internal/lib/errors.go",
+// "json.go": "internal/lib/json.go",
+// "server.go": "internal/lib/server.go",
+// "logger.go": "internal/lib/slogger.go",
+// "types.go": "internal/lib/types.go",
 
 // "dbname.go": "internal/infrastructure/{db_name}.go"

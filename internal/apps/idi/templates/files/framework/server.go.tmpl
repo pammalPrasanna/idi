@@ -1,4 +1,4 @@
-package idi
+package lib
 
 import (
 	"context"
@@ -14,7 +14,6 @@ import (
 	"time"
 
 	_ "github.com/joho/godotenv/autoload"
-	"github.com/julienschmidt/httprouter"
 )
 
 const (
@@ -31,109 +30,79 @@ var (
 	defaultShutdownPeriod = 30 * time.Second
 )
 
-type Server struct {
-	Mux    *httprouter.Router
-	server *http.Server
-	logger ILogger
-	addr   string
-}
-
-var server *Server
-
-func NewServer(port int, logger ILogger) (*Server, error) {
-	if server == nil {
-		server = &Server{}
-
-		server.Mux = httprouter.New()
-		server.logger = logger
-		server.configureStatic()
-
-		server.addr = fmt.Sprintf("localhost:%d", port)
-		server.server = &http.Server{
-			Addr:         server.addr,
-			Handler:      server.Mux,
-			IdleTimeout:  defaultIdleTimeout,
-			ReadTimeout:  defaultReadTimeout,
-			WriteTimeout: defaultWriteTimeout,
-		}
-
-		if idleTimeout != "" {
-			if i, err := strconv.Atoi(idleTimeout); err != nil {
-				server.server.IdleTimeout = time.Duration(i * int(time.Minute))
-			} else {
-				return nil, err
-			}
-		}
-
-		if readTimeout != "" {
-			if i, err := strconv.Atoi(readTimeout); err != nil {
-				server.server.ReadTimeout = time.Duration(i * int(time.Second))
-			} else {
-				return nil, err
-			}
-		}
-
-		if writeTimeout != "" {
-			if i, err := strconv.Atoi(writeTimeout); err != nil {
-				server.server.WriteTimeout = time.Duration(i * int(time.Second))
-			} else {
-				return nil, err
-			}
-		}
-
-		if shutdownPeriod != "" {
-			if i, err := strconv.Atoi(shutdownPeriod); err != nil {
-				defaultShutdownPeriod = time.Duration(i * int(time.Second))
-			} else {
-				return nil, err
-			}
-		}
-
+func newServer(port int, router http.Handler) (server *http.Server, err error) {
+	server = &http.Server{
+		Addr:         fmt.Sprintf("localhost:%d", port),
+		Handler:      router,
+		IdleTimeout:  defaultIdleTimeout,
+		ReadTimeout:  defaultReadTimeout,
+		WriteTimeout: defaultWriteTimeout,
 	}
+
+	if idleTimeout != "" {
+		if i, err := strconv.Atoi(idleTimeout); err != nil {
+			server.IdleTimeout = time.Duration(i * int(time.Minute))
+		} else {
+			return nil, err
+		}
+	}
+
+	if readTimeout != "" {
+		if i, err := strconv.Atoi(readTimeout); err != nil {
+			server.ReadTimeout = time.Duration(i * int(time.Second))
+		} else {
+			return nil, err
+		}
+	}
+
+	if writeTimeout != "" {
+		if i, err := strconv.Atoi(writeTimeout); err != nil {
+			server.WriteTimeout = time.Duration(i * int(time.Second))
+		} else {
+			return nil, err
+		}
+	}
+
+	if shutdownPeriod != "" {
+		if i, err := strconv.Atoi(shutdownPeriod); err != nil {
+			defaultShutdownPeriod = time.Duration(i * int(time.Second))
+		} else {
+			return nil, err
+		}
+	}
+
 	return server, nil
 }
 
-func (s *Server) ServeHTTP() error {
+func (i *idi) ServeHTTP() error {
 	// graceful shutdown
 	done := make(chan bool, 1)
-	go s.gracefulShutdown(done)
+	go i.gracefulShutdown(done)
 
-	s.logger.Info("server started at " + s.addr)
+	i.logger.Info(fmt.Sprintf("server started at port %d", i.port))
 
-	return s.server.ListenAndServe()
+	return i.server.ListenAndServe()
 }
 
-func (s *Server) configureStatic() {
-	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	s.Mux.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
-}
-
-func (s *Server) WrapIt(middlewares ...func(next http.Handler) http.Handler) {
-	for _, m := range middlewares {
-		// fmt.Println(runtime.FuncForPC(reflect.ValueOf(m).Pointer()).Name())
-		s.server.Handler = m(s.server.Handler)
-	}
-}
-
-func (s *Server) gracefulShutdown(done chan bool) {
-	// Create context that listens for the interrupt signal from the OS.
+func (i *idi) gracefulShutdown(done chan bool) {
+	// Create context that listens for the interrupt signal from the Oi.
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
 	// Listen for the interrupt signal.
 	<-ctx.Done()
 
-	s.logger.Info("shutting down gracefully, press Ctrl+C again to force")
+	i.logger.Info("shutting down gracefully, press Ctrl+C again to force")
 
 	// The context is used to inform the server it has 5 seconds to finish
 	// the request it is currently handling
 	ctx, cancel := context.WithTimeout(context.Background(), defaultShutdownPeriod)
 	defer cancel()
-	if err := s.server.Shutdown(ctx); err != nil {
-		s.logger.Warn("Server forced to shutdown with error: %v", err)
+	if err := i.server.Shutdown(ctx); err != nil {
+		i.logger.Warn("Server forced to shutdown with error: %v", err)
 	}
 
-	s.logger.Warn("Server exiting")
+	i.logger.Warn("Server exiting")
 
 	// Notify the main goroutine that the shutdown is complete
 	done <- true

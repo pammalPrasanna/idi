@@ -1,0 +1,106 @@
+package lib
+
+import (
+	"database/sql"
+	"net/http"
+
+	infra "{{.ProjectName}}/internal/infrastructure"
+	{{if .IsAuth}}
+	"{{.ProjectName}}/internal/lib/auth"
+	{{end}}
+	"github.com/julienschmidt/httprouter"
+)
+
+type idi struct {
+	*config
+
+	// rest.go
+	logger ILogger
+
+	// server.go
+	router *httprouter.Router
+	server *http.Server
+
+	// sqlite3
+	sqlite3 *sql.DB
+
+	// auth
+	customGetUserByID func(id int) (*IUser, error)
+	{{if .IsAuth}}auth.Maker{{end}}
+}
+
+var _ IApp = (*idi)(nil)
+
+func Idi() (*idi, error) {
+	idi := &idi{}
+
+	cfg, err := configure()
+	if err != nil {
+		return nil, err
+	}
+	idi.config = cfg
+
+	idi.logger = newLogger(nil)
+	idi.router = httprouter.New()
+
+	// open DB connection(s)
+	conn, err := infra.Sqlite3()
+	if err != nil {
+		return nil, err
+	}
+	idi.sqlite3 = conn
+
+{{if .IsAuth}}
+	{{if .IsPaseto}}
+	paseto, err := auth.NewPasetoMaker(idi.tokenExpiration, idi.symmetricKey, idi.baseURL)
+	if err != nil {
+		return nil, err
+	}
+	idi.Maker = paseto
+	{{else}}
+	jwt, err := auth.NewJWTMaker(idi.tokenExpiration, idi.jwtSecret, idi.baseURL)
+	if err != nil {
+		return nil, err
+	}
+	idi.Maker = jwt
+	{{end}}
+{{end}}
+	server, err := newServer(idi.port, idi.router)
+	if err != nil {
+		return nil, err
+	}
+	idi.server = server
+
+	// global middlewares
+{{if .IsAuth}}server.Handler = idi.authenticateM(server.Handler){{end}}
+	server.Handler = idi.recoverPanicM(server.Handler)
+	server.Handler = idi.loggerM(server.Handler)
+	server.Handler = idi.corsM(server.Handler)
+
+	// static config
+	fileServer := http.FileServer(http.Dir("./ui/static/"))
+	idi.router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
+
+	return idi, nil
+}
+
+func (i *idi) Sqlite3() *sql.DB {
+	return i.sqlite3
+}
+
+func (i *idi) Mux() *httprouter.Router {
+	return i.router
+}
+
+func (i *idi) Logger() ILogger {
+	return i.logger
+}
+
+func (i *idi) GetUserById(id int) (*IUser, error) {
+	if i.customGetUserByID == nil {
+		i.logger.Warn("unimplemented method: GetUserById")
+		return &IUser{ID: 2}, nil
+	} else {
+		return i.customGetUserByID(id)
+	}
+}

@@ -1,4 +1,4 @@
-package idi
+package lib
 
 import (
 	"fmt"
@@ -8,22 +8,7 @@ import (
 	"strings"
 )
 
-type REST struct {
-	logger ILogger
-}
-
-var rest *REST
-
-func NewREST(logger ILogger) *REST {
-	if rest != nil {
-		rest = &REST{
-			logger: logger,
-		}
-	}
-	return rest
-}
-
-func (rest *REST) reportServerError(r *http.Request, err error) {
+func (i *idi) reportServerError(r *http.Request, err error) {
 	var (
 		message = err.Error()
 		method  = r.Method
@@ -32,86 +17,54 @@ func (rest *REST) reportServerError(r *http.Request, err error) {
 	)
 
 	requestAttrs := slog.Group("request", "method", method, "url", url)
-	rest.logger.Error(message, requestAttrs, "trace", trace)
+	i.logger.Error(message, requestAttrs, "trace", trace)
 }
 
-func (rest *REST) errorMessage(w http.ResponseWriter, r *http.Request, status int, message string, headers http.Header) {
+func (i *idi) errorMessage(w http.ResponseWriter, r *http.Request, status int, message string, headers http.Header) {
 	message = strings.ToUpper(message[:1]) + message[1:]
 
-	err := JSONWithHeaders(w, status, map[string]string{"Error": message}, headers)
+	err := i.JSONWithHeaders(w, status, map[string]string{"Error": message}, headers)
 	if err != nil {
-		rest.reportServerError(r, err)
+		i.reportServerError(r, err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
 
-func (rest *REST) ServerError(w http.ResponseWriter, r *http.Request, err error) {
-	rest.reportServerError(r, err)
+func (i *idi) ServerError(w http.ResponseWriter, r *http.Request, err error) {
+	i.reportServerError(r, err)
 
 	message := "The server encountered a problem and could not process your request"
-	rest.errorMessage(w, r, http.StatusInternalServerError, message, nil)
+	i.errorMessage(w, r, http.StatusInternalServerError, message, nil)
 }
 
-func (rest *REST) NotFound(w http.ResponseWriter, r *http.Request) {
+func (i *idi) NotFound(w http.ResponseWriter, r *http.Request) {
 	message := "The requested resource could not be found"
-	rest.errorMessage(w, r, http.StatusNotFound, message, nil)
+	i.errorMessage(w, r, http.StatusNotFound, message, nil)
 }
 
-func (rest *REST) MethodNotAllowed(w http.ResponseWriter, r *http.Request) {
+func (i *idi) MethodNotAllowed(w http.ResponseWriter, r *http.Request) {
 	message := fmt.Sprintf("The %s method is not supported for this resource", r.Method)
-	rest.errorMessage(w, r, http.StatusMethodNotAllowed, message, nil)
+	i.errorMessage(w, r, http.StatusMethodNotAllowed, message, nil)
 }
 
-func (rest *REST) BadRequest(w http.ResponseWriter, r *http.Request, err error) {
-	rest.errorMessage(w, r, http.StatusBadRequest, err.Error(), nil)
+func (i *idi) BadRequest(w http.ResponseWriter, r *http.Request, err error) {
+	i.errorMessage(w, r, http.StatusBadRequest, err.Error(), nil)
 }
 
-func (rest *REST) FailedValidation(w http.ResponseWriter, r *http.Request, v Validator) {
-	err := JSON(w, http.StatusUnprocessableEntity, v)
+func (i *idi) FailedValidation(w http.ResponseWriter, r *http.Request, v Validator) {
+	err := i.JSON(w, http.StatusUnprocessableEntity, v)
 	if err != nil {
-		rest.ServerError(w, r, err)
+		i.ServerError(w, r, err)
 	}
 }
 
-func (rest *REST) InvalidAuthenticationToken(w http.ResponseWriter, r *http.Request) {
+func (i *idi) InvalidAuthenticationToken(w http.ResponseWriter, r *http.Request) {
 	headers := make(http.Header)
 	headers.Set("WWW-Authenticate", "Bearer")
 
-	rest.errorMessage(w, r, http.StatusUnauthorized, "Invalid authentication token", headers)
+	i.errorMessage(w, r, http.StatusUnauthorized, "Invalid authentication token", headers)
 }
 
-func (rest *REST) AuthenticationRequired(w http.ResponseWriter, r *http.Request) {
-	rest.errorMessage(w, r, http.StatusUnauthorized, "You must be authenticated to access this resource", nil)
-}
-
-func (rest *REST) RecoverPanicM(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer func() {
-			err := recover()
-			if err != nil {
-				rest.ServerError(w, r, fmt.Errorf("%s", err))
-			}
-		}()
-
-		next.ServeHTTP(w, r)
-	})
-}
-
-// CORS middleware
-func (rest *REST) CorsM(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// CORS headers
-		w.Header().Set("Access-Control-Allow-Origin", "*") // Use "*" for all origins, or replace with specific origins
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH")
-		w.Header().Set("Access-Control-Allow-Headers", "Accept, Authorization, Content-Type, X-CSRF-Token")
-		w.Header().Set("Access-Control-Allow-Credentials", "false") // Set to "true" if credentials are needed
-
-		// Handle preflight OPTIONS requests
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusNoContent)
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
+func (i *idi) AuthenticationRequired(w http.ResponseWriter, r *http.Request) {
+	i.errorMessage(w, r, http.StatusUnauthorized, "You must be authenticated to access this resource", nil)
 }

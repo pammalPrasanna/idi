@@ -19,6 +19,8 @@ type Idi struct {
 	dbName      string
 	projectPath string
 	routerName  string
+	isAuth      bool
+	isPaseto    bool
 }
 
 var (
@@ -26,7 +28,7 @@ var (
 	routerList = [...]string{"chi", "httprouter", "mux"}
 )
 
-func New(projectName, appName, dbName, routerName string) (*Idi, error) {
+func New(projectName, appName, dbName, routerName string, isAuth, isPaseto bool) (*Idi, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		return nil, err
@@ -45,6 +47,8 @@ func New(projectName, appName, dbName, routerName string) (*Idi, error) {
 		appName:     appName,
 		dbName:      dbName,
 		routerName:  routerName,
+		isAuth:      isAuth,
+		isPaseto:    isPaseto,
 		projectPath: filepath.Join(cwd, projectName),
 	}, nil
 }
@@ -53,7 +57,7 @@ func (i Idi) Create() error {
 	if i.projectName != i.none {
 		// validate project name
 		// generate project
-		t := templates.New(i.projectPath, i.projectName, i.dbName, i.appName, i.routerName)
+		t := templates.New(i.projectPath, i.projectName, i.dbName, i.appName, i.routerName, i.isAuth, i.isPaseto)
 		if err := t.CreateProjectFolder(); err != nil {
 			return err
 		}
@@ -84,7 +88,7 @@ func (i Idi) Create() error {
 		// validate app name already doesn't exists
 
 		// if cwd + our apps apth exists --> project exists else no project found
-		t := templates.New(i.projectPath, i.projectName, i.dbName, i.appName, i.routerName)
+		t := templates.New(i.projectPath, i.projectName, i.dbName, i.appName, i.routerName, i.isAuth, i.isPaseto)
 		if err := t.CreateApp(); err != nil {
 			return err
 		}

@@ -1,13 +1,10 @@
-package idi
+package lib
 
 import (
 	"io"
 	"log"
 	"log/slog"
-	"net/http"
 	"os"
-
-	"github.com/tomasen/realip"
 )
 
 type slogLogger struct {
@@ -16,7 +13,7 @@ type slogLogger struct {
 
 var _ ILogger = (*slogLogger)(nil)
 
-func NewLogger(out io.Writer) ILogger {
+func newLogger(out io.Writer) ILogger {
 	if out == nil {
 		out = os.Stdout
 	}
@@ -46,24 +43,4 @@ func (sl *slogLogger) Error(msg string, keysAndValues ...interface{}) {
 func (sl *slogLogger) Fatal(msg string, keysAndValues ...interface{}) {
 	sl.log.Error(msg, keysAndValues...)
 	log.Fatal(msg)
-}
-
-func (sl *slogLogger) LoggerM(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		mw := newMetricsResponseWriter(w)
-		next.ServeHTTP(mw, r)
-
-		var (
-			ip     = realip.FromRequest(r)
-			method = r.Method
-			url    = r.URL.String()
-			proto  = r.Proto
-		)
-
-		userAttrs := slog.Group("user", "ip", ip)
-		requestAttrs := slog.Group("request", "method", method, "url", url, "proto", proto)
-		responseAttrs := slog.Group("repsonse", "status", mw.StatusCode, "size", mw.BytesCount)
-
-		sl.Info("access", userAttrs, requestAttrs, responseAttrs)
-	})
 }
