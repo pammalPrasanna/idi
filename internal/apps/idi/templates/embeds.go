@@ -43,9 +43,6 @@ var apiFile []byte
 //go:embed files/framework/configs.go.tmpl
 var configsFile []byte
 
-//go:embed files/framework/rootapp.go.tmpl
-var rootAppFile []byte
-
 //go:embed files/framework/errors.go.tmpl
 var errorsFile []byte
 
