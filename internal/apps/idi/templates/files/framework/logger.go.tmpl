@@ -44,3 +44,7 @@ func (sl *slogLogger) Fatal(msg string, keysAndValues ...interface{}) {
 	sl.log.Error(msg, keysAndValues...)
 	log.Fatal(msg)
 }
+
+func (sl *slogLogger) Handler() slog.Handler {
+	return sl.log.Handler()
+}

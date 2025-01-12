@@ -3,6 +3,7 @@ package lib
 import (
 	"database/sql"
 	"net/http"
+	"log/slog"	
 {{if .IsAuth}}
 	"{{.ProjectName}}/internal/lib/auth"
 {{end}}
@@ -48,6 +49,7 @@ type ILogger interface {
 	Warn(msg string, keysAndValues ...interface{})
 	Error(msg string, keysAndValues ...interface{})
 	Fatal(msg string, keysAndValues ...interface{})
+	Handler() slog.Handler
 }
 
 type IUser struct {

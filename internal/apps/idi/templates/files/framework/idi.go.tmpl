@@ -65,7 +65,7 @@ func Idi() (*idi, error) {
 	idi.Maker = jwt
 	{{end}}
 {{end}}
-	server, err := newServer(idi.port, idi.router)
+	server, err := newServer(idi.port, idi.router, idi.logger)
 	if err != nil {
 		return nil, err
 	}

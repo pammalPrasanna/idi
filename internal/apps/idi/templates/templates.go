@@ -21,7 +21,7 @@ var frameworkDefaultFiles = map[string]*itemplate{
 		content: apiFile,
 	},
 	"main.go": {
-		path:    "cmd/main.go",
+		path:    "main.go",
 		content: mainFile,
 	},
 	// cmd files ends

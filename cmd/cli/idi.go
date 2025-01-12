@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"os"
 
 	"github.com/pammalPrasanna/idi/internal/apps/idi"
 	"github.com/pammalPrasanna/idi/internal/utils"
@@ -38,6 +39,11 @@ func Main() error {
 	}
 
 	if idi != nil {
+		fmt.Println("Run: ")
+		fmt.Printf("1. cd %s \n", *projectName)
+		fmt.Printf("2. go fmt .%s...\n", string(os.PathSeparator))
+		fmt.Println("3. go mod tidy")
+		fmt.Printf("4. go run .%s...", string(os.PathSeparator))
 		return nil
 	}
 	return ErrNoCommand
