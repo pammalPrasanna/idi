@@ -4,12 +4,19 @@ import (
 	"net/http"
 
 	"{{.ProjectName}}/internal/apps/{{.AppName}}/internal/application"
-	"{{.ProjectName}}/internal/idi"
+	"{{.ProjectName}}/internal/lib"
 )
 
 type {{ capitalize .AppName }}Controller struct {
-	*idi.REST
+	lib.IApp
 	app *application.{{ capitalize .AppName }}
+}
+
+func new{{ capitalize .AppName }}Controller(rootApp lib.IApp, app *application.{{ capitalize .AppName }}) *{{ capitalize .AppName }}Controller {
+	return &{{ capitalize .AppName }}Controller{
+		rootApp,
+		app,
+	}
 }
 
 func (tc *{{capitalize .AppName}}Controller) find{{capitalize .AppName}}H(w http.ResponseWriter, r *http.Request) {}

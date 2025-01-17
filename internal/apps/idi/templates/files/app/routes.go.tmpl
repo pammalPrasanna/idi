@@ -4,16 +4,13 @@ import (
 	"net/http"
 
 	"{{.ProjectName}}/internal/apps/{{.AppName}}/internal/application"
-	"{{.ProjectName}}/internal/idi"
+	"{{.ProjectName}}/internal/lib"
 
-
-	"github.com/julienschmidt/httprouter"
 )
 
-func RegisterRoutes(app *application.{{ capitalize .AppName }}, rest *idi.REST, mux *httprouter.Router) {
-	ctrlr := &{{capitalize .AppName}}Controller{}
-	ctrlr.REST = rest
-	ctrlr.app = app
+func RegisterRoutes(rootApp lib.IApp, app *application.{{ capitalize .AppName }}) {
+	ctrlr := new{{ capitalize .AppName }}Controller(rootApp, app)
+	mux := ctrlr.Mux()
 
 	mux.HandlerFunc(http.MethodGet, "/{{.AppName}}", ctrlr.find{{capitalize .AppName}}H)
 	mux.HandlerFunc(http.MethodGet, "/{{.AppName}}/:id", ctrlr.get{{capitalize .AppName}}H)

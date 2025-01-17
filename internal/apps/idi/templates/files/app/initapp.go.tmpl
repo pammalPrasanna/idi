@@ -3,7 +3,7 @@ package {{.AppName}}
 import (
 	rest "{{.ProjectName}}/internal/apps/{{.AppName}}/internal/adapters/{{.RouterName}}"
 	{{if (ne .DBName "")}}"{{.ProjectName}}/internal/apps/{{.AppName}}/internal/adapters/{{.DBName}}"{{end}}
-	"{{.ProjectName}}/internal/idi"
+	"{{.ProjectName}}/internal/lib"
 	"{{.ProjectName}}/internal/apps/{{.AppName}}/internal/application"
 )
 
@@ -13,7 +13,7 @@ func {{ capitalize .AppName }}App() *application.{{ capitalize .AppName }} {
  	return {{.AppName}}App
 }
 
-func InitApp(rootApp idi.IApp) {
+func InitApp(rootApp lib.IApp) {
 	{{if (ne .DBName "")}}
 		// create app repository
 		{{.AppName}}Repo := {{.DBName}}.NewRepository(rootApp.{{capitalize .DBName}}())
@@ -25,5 +25,5 @@ func InitApp(rootApp idi.IApp) {
 
 
 	// register routes if needed
-	rest.RegisterRoutes({{.AppName}}App, idi.NewREST(rootApp.Logger()), rootApp.Mux())
+	rest.RegisterRoutes(rootApp, {{.AppName}}App)
 }
