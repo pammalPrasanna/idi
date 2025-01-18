@@ -72,6 +72,10 @@ var frameworkDefaultFiles = map[string]*itemplate{
 		path:    "internal/lib/middlewares.go",
 		content: middlewaresFile,
 	},
+	".env": {
+		path:    ".env",
+		content: dotEnvFile,
+	},
 	// framework files end
 }
 

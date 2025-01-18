@@ -1,16 +1,15 @@
 package lib
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"runtime/debug"
-	"strings"
-	{{if eq .RouterName "httprouter"}}
-	"errors"
 	"strconv"
+	"strings"
+
 	"github.com/julienschmidt/httprouter"
-	{{end}}
 )
 
 func (i *idi) reportServerError(r *http.Request, err error) {
@@ -28,7 +27,7 @@ func (i *idi) reportServerError(r *http.Request, err error) {
 func (i *idi) errorMessage(w http.ResponseWriter, r *http.Request, status int, message string, headers http.Header) {
 	message = strings.ToUpper(message[:1]) + message[1:]
 
-	err := i.JSONWithHeaders(w, status, map[string]string{"Error": message}, headers)
+	err := i.JSONWithHeaders(w, status, map[string]string{"error": message}, headers)
 	if err != nil {
 		i.reportServerError(r, err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -42,8 +41,7 @@ func (i *idi) ServerError(w http.ResponseWriter, r *http.Request, err error) {
 	i.errorMessage(w, r, http.StatusInternalServerError, message, nil)
 }
 
-func (i *idi) NotFound(w http.ResponseWriter, r *http.Request) {
-	message := "The requested resource could not be found"
+func (i *idi) NotFound(w http.ResponseWriter, r *http.Request, message string) {
 	i.errorMessage(w, r, http.StatusNotFound, message, nil)
 }
 
@@ -74,7 +72,6 @@ func (i *idi) AuthenticationRequired(w http.ResponseWriter, r *http.Request) {
 	i.errorMessage(w, r, http.StatusUnauthorized, "You must be authenticated to access this resource", nil)
 }
 
-{{if eq .RouterName "httprouter"}}
 func (i *idi) ParseIntFromRequest(name string, r *http.Request) (int64, error) {
 	params := httprouter.ParamsFromContext(r.Context())
 	id, err := strconv.ParseInt(params.ByName("id"), 10, 64)
@@ -83,4 +80,4 @@ func (i *idi) ParseIntFromRequest(name string, r *http.Request) (int64, error) {
 	}
 	return id, nil
 }
-{{end}}
+

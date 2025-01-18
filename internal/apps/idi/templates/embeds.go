@@ -88,4 +88,7 @@ var idiFile []byte
 //go:embed files/framework/middlewares.go.tmpl
 var middlewaresFile []byte
 
+//go:embed files/framework/dotenv.go.tmpl
+var dotEnvFile []byte
+
 // framework files end

@@ -10,14 +10,6 @@ import (
 )
 
 func Main(rootApp lib.IApp) error {
-	{{if (ne .DBName "")}}
-	// handle DB close on application shutdown
-	defer func() {
-		if err := rootApp.{{capitalize .DBName}}().Close(); err != nil {
-			rootApp.Logger().Error("unable to close {{capitalize .DBName}}", "{{capitalize .DBName}}.Close()", err)
-		}
-	}()
-	{{end}}
 	{{if (ne .AppName "")}}
 	// inject root app to other apps
 	{{.AppName}}.InitApp(rootApp)

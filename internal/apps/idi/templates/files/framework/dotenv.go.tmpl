@@ -1,0 +1,26 @@
+DB_DSN = "sqlite3.db"
+DB_MAX_OPEN_CONNS = 25 
+DB_MAX_IDLE_CONNS = 25
+DB_CONN_MAX_IDLE_TIME = 5 # in minute
+DB_CONN_MAX_LIFETIME = 2 # in hour
+
+PORT = 4300
+ENVIRONMENT = "development" 
+BASE_URL = "http://localhost:4300"
+CONTEXT_TIMEOUT = 2 # in seconds
+SERVER_IDLE_TIMEOUT = 1 # in minute
+SERVER_READ_TIMEOUT = 5 # in seconds
+SERVER_WRITE_TIMEOUT = 10 # in seconds
+SERVER_GRACEFUL_SHUTDOWN_PERIOD = 30 # in seconds
+
+{{if .IsAuth}}
+	{{if .IsPaseto}}
+SYMMETRIC_KEY = "e4d91d0399a767f636b78172a72324cc"
+	{{else}}
+JWT_SECRET = "762898e6b788045334ab11d18e3a9c21e4d91d0399a767f636b78172a72324cc"
+	{{end}}
+TOKEN_EXPIRATION = 1 # in hour
+{{end}}
+
+
+

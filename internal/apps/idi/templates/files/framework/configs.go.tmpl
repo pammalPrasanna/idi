@@ -4,7 +4,8 @@ import (
 	"os"
 	"strconv"
 	"time"
-
+	"strings"
+	
 	_ "github.com/joho/godotenv/autoload"
 )
 
@@ -12,9 +13,15 @@ type config struct {
 	port            int
 	env             string
 	baseURL         string
-	jwtSecret       string
-	symmetricKey    string
-	tokenExpiration time.Duration
+	trustedOrigins  []string
+	{{if .IsAuth}}
+		{{if .IsPaseto}}
+			symmetricKey    string
+		{{else}}
+			jwtSecret       string
+		{{end}}
+		tokenExpiration time.Duration
+	{{end}}
 }
 
 // type default
@@ -23,18 +30,30 @@ const (
 	defaultPort            int           = 4200
 	defaultENV             string        = "development"
 	defaultBaseURL         string        = "http://localhost:4200"
-	defaultJWTSecret       string        = "762898e6b788045334ab11d18e3a9c21e4d91d0399a767f636b78172a72324cc"
-	defaultSymmetricKey    string        = "e4d91d0399a767f636b78172a72324cc"
-	defaultTokenExpiration time.Duration = time.Hour
+	{{if .IsAuth}}
+		{{if .IsPaseto}}
+			defaultSymmetricKey    string        = "e4d91d0399a767f636b78172a72324cc"
+		{{else}}
+			defaultJWTSecret       string        = "762898e6b788045334ab11d18e3a9c21e4d91d0399a767f636b78172a72324cc"
+		{{end}}
+		defaultTokenExpiration time.Duration = time.Hour
+	{{end}}
 )
 
 var (
 	port            = os.Getenv("PORT")
 	env             = os.Getenv("ENVIRONMENT")
 	baseURL         = os.Getenv("BASE_URL")
-	jwtSecret       = os.Getenv("JWT_SECRET")
-	symmetricKey    = os.Getenv("SYMMETRIC_KEY")
-	tokenExpiration = os.Getenv("TOKEN_EXPIRATION")
+	trustedOrigins                 = os.Getenv("TRUSTED_ORIGINS")
+	defaulttrustedOrigins []string = []string{"*"}
+	{{if .IsAuth}}
+		{{if .IsPaseto}}
+			symmetricKey    = os.Getenv("SYMMETRIC_KEY")
+		{{else}}
+			jwtSecret       = os.Getenv("JWT_SECRET")
+		{{end}}
+		tokenExpiration = os.Getenv("TOKEN_EXPIRATION")
+	{{end}}
 )
 
 func configure() (cfg *config, err error) {
@@ -42,12 +61,17 @@ func configure() (cfg *config, err error) {
 		port:            defaultPort,
 		env:             defaultENV,
 		baseURL:         defaultBaseURL,
-		jwtSecret:       defaultJWTSecret,
-		symmetricKey:    defaultSymmetricKey,
-		tokenExpiration: defaultTokenExpiration,
+		{{if .IsAuth}}
+			{{if .IsPaseto}}
+				symmetricKey:    defaultSymmetricKey,
+			{{else}}
+				jwtSecret:       defaultJWTSecret,
+			{{end}}
+			tokenExpiration: defaultTokenExpiration,
+		{{end}}
 	}
 	if port != "" {
-		if i, err := strconv.Atoi(port); err != nil {
+		if i, err := strconv.Atoi(port); err == nil {
 			cfg.port = i
 		} else {
 			return nil, err
@@ -62,21 +86,31 @@ func configure() (cfg *config, err error) {
 		cfg.baseURL = baseURL
 	}
 
-	if jwtSecret != "" {
-		cfg.jwtSecret = jwtSecret
-	}
-
-	if symmetricKey != "" {
-		cfg.symmetricKey = symmetricKey
-	}
-
-	if tokenExpiration != "" {
-		if i, err := strconv.Atoi(tokenExpiration); err != nil {
-			cfg.tokenExpiration = time.Duration(i) * time.Hour
-		} else {
-			return nil, err
+	if trustedOrigins != "" {
+		origins := strings.Split(trustedOrigins, ",")
+		for i, url := range origins {
+			origins[i] = strings.TrimSpace(url)
 		}
+		cfg.trustedOrigins = origins
 	}
 
+	{{if .IsAuth}}
+		{{if .IsPaseto}}
+			if symmetricKey != "" {
+				cfg.symmetricKey = symmetricKey
+			}
+		{{else}}
+			if jwtSecret != "" {
+				cfg.jwtSecret = jwtSecret
+			}
+		{{end}}
+		if tokenExpiration != "" {
+			if i, err := strconv.Atoi(tokenExpiration); err == nil {
+				cfg.tokenExpiration = time.Duration(i) * time.Hour
+			} else {
+				return nil, err
+			}
+		}
+	{{end}}
 	return cfg, nil
 }

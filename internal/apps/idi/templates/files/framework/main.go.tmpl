@@ -17,7 +17,17 @@ func main() {
 		fmt.Println(trace)
 		os.Exit(1)
 	}
-	defer idi.Sqlite3().Close()
+
+	{{if (ne .DBName "")}}
+	// handle DB close on application exit
+	defer func() {
+		if err := idi.{{capitalize .DBName}}().Close(); err != nil {
+			idi.Logger().Error("unable to close {{capitalize .DBName}}", "{{capitalize .DBName}}.Close()", err)
+		} else {
+			idi.Logger().Info("closed {{capitalize .DBName}} successfully")
+		}
+	}()
+	{{end}}
 
 	err = api.Main(idi)
 	if err != nil {
