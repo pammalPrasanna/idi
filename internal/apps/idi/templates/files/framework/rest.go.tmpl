@@ -56,10 +56,10 @@ func (i *idi) BadRequest(w http.ResponseWriter, r *http.Request, err error) {
 	i.errorMessage(w, r, http.StatusBadRequest, err.Error(), nil)
 }
 
-func (i *idi) FailedValidation(w http.ResponseWriter, r *http.Request, v Validator) {
-	err := i.JSON(w, http.StatusUnprocessableEntity, v)
-	if err != nil {
-		i.ServerError(w, r, err)
+func (i *idi) UnprocessableEntity(w http.ResponseWriter, r *http.Request, data any) {
+	jerr := i.JSON(w, http.StatusUnprocessableEntity, data)
+	if jerr != nil {
+		i.ServerError(w, r, jerr)
 	}
 }
 

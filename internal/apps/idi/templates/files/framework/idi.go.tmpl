@@ -3,6 +3,7 @@ package lib
 import (
 	"database/sql"
 	"net/http"
+	"time"
 
 	infra "{{.ProjectName}}/internal/infrastructure"
 	{{if .IsAuth}}
@@ -21,8 +22,8 @@ type idi struct {
 	router *httprouter.Router
 	server *http.Server
 
-	// sqlite3
-	sqlite3 *sql.DB
+
+	{{.DBName}} *sql.DB
 
 	// auth
 	customGetUserByID func(id int) (*IUser, error)
@@ -44,11 +45,11 @@ func Idi() (*idi, error) {
 	idi.router = httprouter.New()
 
 	// open DB connection(s)
-	conn, err := infra.Sqlite3()
+	conn, err := infra.{{capitalize .DBName}}()
 	if err != nil {
 		return nil, err
 	}
-	idi.sqlite3 = conn
+	idi.{{.DBName}} = conn
 
 {{if .IsAuth}}
 	{{if .IsPaseto}}
@@ -84,8 +85,8 @@ func Idi() (*idi, error) {
 	return idi, nil
 }
 
-func (i *idi) Sqlite3() *sql.DB {
-	return i.sqlite3
+func (i *idi) {{capitalize .DBName}}() *sql.DB {
+	return i.{{.DBName}}
 }
 
 func (i *idi) Mux() *httprouter.Router {
@@ -103,4 +104,8 @@ func (i *idi) GetUserById(id int) (*IUser, error) {
 	} else {
 		return i.customGetUserByID(id)
 	}
+}
+
+func (i *idi) ContextTime() time.Duration {
+	return i.contextTimeout
 }

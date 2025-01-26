@@ -6,10 +6,11 @@ type itemplate struct {
 }
 
 var frameworkFolders = map[string]string{
-	"cmd":  "cmd/api",
-	"apps": "internal/apps",
-	"dtos": "internal/dtos",
-	"lib":  "internal/lib",
+	"cmd":   "cmd/api",
+	"apps":  "internal/apps",
+	"dtos":  "internal/dtos",
+	"lib":   "internal/lib",
+	"tests": "internal/tests",
 
 	"infrastructure": "internal/infrastructure",
 }
@@ -72,6 +73,10 @@ var frameworkDefaultFiles = map[string]*itemplate{
 		path:    "internal/lib/middlewares.go",
 		content: middlewaresFile,
 	},
+	"itime.go": {
+		path:    "internal/lib/itime.go",
+		content: itimeFile,
+	},
 	".env": {
 		path:    ".env",
 		content: dotEnvFile,
@@ -128,8 +133,8 @@ var appDefaultFolders = map[string]string{
 }
 
 var appDBFolders = map[string]string{
-	"DB":   "internal/apps/{app_name}/internal/adapters/{db_name}",
-	"sqlc": "internal/apps/{app_name}/internal/sqlc",
+	"DB": "internal/apps/{app_name}/internal/adapters/{db_name}",
+	// "sqlc": "internal/apps/{app_name}/internal/sqlc",
 }
 
 var appDBFiles = map[string]*itemplate{
@@ -147,6 +152,10 @@ var appDefaultFiles = map[string]*itemplate{
 	"app.dtos.go": {
 		path:    "internal/dtos/{app_name}.dtos.go",
 		content: dtoFile,
+	},
+	"http.dtos.go": {
+		path:    "internal/dtos/http.dtos.go",
+		content: httpDTOsFile,
 	},
 	"module.go": {
 		path:    "internal/apps/{app_name}/app.init.go",
@@ -167,6 +176,14 @@ var appDefaultFiles = map[string]*itemplate{
 	"routes.go": {
 		path:    "internal/apps/{app_name}/internal/adapters/{router_name}/{app_name}.routes.go",
 		content: routeFile,
+	},
+	"rest.dtos.go": {
+		path:    "internal/apps/{app_name}/internal/adapters/{router_name}/rest.dtos.go",
+		content: restDTOsFile,
+	},
+	"generate_test.go": {
+		path:    "internal/apps/{app_name}/internal/tests/generate_test.go",
+		content: genTestFile,
 	},
 }
 

@@ -14,17 +14,18 @@ type Templater struct {
 	ProjectName string
 	DBName      string
 	AppName     string
+	AppNames    []string
 	RouterName  string
 	IsAuth      bool
 	IsPaseto    bool
 }
 
-func New(projectPath, projectName, dbName, appName, routerName string, isAuth, isPaseto bool) *Templater {
+func New(projectPath, projectName, dbName, routerName string, appNames []string, isAuth, isPaseto bool) *Templater {
 	return &Templater{
 		projectPath: projectPath,
 		ProjectName: projectName,
 		DBName:      dbName,
-		AppName:     appName,
+		AppNames:    appNames,
 		RouterName:  routerName,
 		IsAuth:      isAuth,
 		IsPaseto:    isPaseto,
@@ -77,24 +78,27 @@ func (t Templater) CreateFramework() error {
 }
 
 func (t Templater) CreateApp() error {
-	// create app default folders
-	if err := t.createFolders(t.projectPath, appDefaultFolders); err != nil {
-		return err
-	}
-
-	// create app default files
-	if err := t.createFiles(t.projectPath, appDefaultFiles); err != nil {
-		return err
-	}
-
-	// create db folders and files if specified
-	if t.DBName != "" {
-		if err := t.createFolders(t.projectPath, appDBFolders); err != nil {
+	for _, appName := range t.AppNames {
+		t.AppName = appName
+		// create app default folders
+		if err := t.createFolders(t.projectPath, appDefaultFolders); err != nil {
 			return err
 		}
 
-		if err := t.createFiles(t.projectPath, appDBFiles); err != nil {
+		// create app default files
+		if err := t.createFiles(t.projectPath, appDefaultFiles); err != nil {
 			return err
+		}
+
+		// create db folders and files if specified
+		if t.DBName != "" {
+			if err := t.createFolders(t.projectPath, appDBFolders); err != nil {
+				return err
+			}
+
+			if err := t.createFiles(t.projectPath, appDBFiles); err != nil {
+				return err
+			}
 		}
 	}
 

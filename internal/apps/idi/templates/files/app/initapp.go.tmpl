@@ -16,7 +16,7 @@ func {{ capitalize .AppName }}App() *application.{{ capitalize .AppName }} {
 func InitApp(rootApp lib.IApp) {
 	{{if (ne .DBName "")}}
 		// create app repository
-		{{.AppName}}Repo := {{.DBName}}.NewRepository(rootApp.{{capitalize .DBName}}())
+		{{.AppName}}Repo := {{.DBName}}.NewRepository(rootApp.{{capitalize .DBName}}(), rootApp.Logger())
 		// create app with repository
 		{{.AppName}}App = application.New(rootApp, {{ .AppName }}Repo)
 	{{else}}

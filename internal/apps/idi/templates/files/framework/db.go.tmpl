@@ -25,10 +25,15 @@ var (
 	maxIdleConns    = os.Getenv("DB_MAX_IDLE_CONNS")
 	connMaxIdleTime = os.Getenv("DB_CONN_MAX_IDLE_TIME")
 	connMaxLifetime = os.Getenv("DB_CONN_MAX_LIFETIME")
+
+	instance *sql.DB
 )
 
 {{if (eq .DBName "mysql")}}
 func Mysql() (*sql.DB, error) {
+	if instance != nil {
+		return instance, nil
+	}
 	conn, err := sql.Open("mysql", dsn)
 	if err != nil {
 		return nil, err
@@ -75,13 +80,17 @@ func Mysql() (*sql.DB, error) {
 	}
 
 
-	return conn, nil
+	instance = conn
+	return instance, nil
 }
 {{end}}
 
 
 {{if (eq .DBName "postgres")}}
 func Postgres() (*sql.DB, error) {
+	if instance != nil {
+		return instance, nil
+	}
 	conn, err := sql.Open("psql", dsn)
 	if err != nil {
 		return nil, err
@@ -128,13 +137,17 @@ func Postgres() (*sql.DB, error) {
 	}
 
 
-	return conn, nil
+	instance = conn
+	return instance, nil
 }
 {{end}}
 
 
 {{if (eq .DBName "sqlite3")}}
 func Sqlite3() (*sql.DB, error) {
+	if instance != nil {
+		return instance, nil
+	}
 	conn, err := sql.Open("sqlite3", dsn)
 	if err != nil {
 		return nil, err
@@ -181,6 +194,7 @@ func Sqlite3() (*sql.DB, error) {
 	}
 
 
-	return conn, nil
+	instance = conn
+	return instance, nil
 }
 {{end}}

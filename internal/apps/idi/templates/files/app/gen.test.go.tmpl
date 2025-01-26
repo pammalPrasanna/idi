@@ -1,0 +1,4 @@
+package todos_test
+
+//go:generate mockgen -source ..\application\ports\{{.AppName}}.irepository.go -destination .\repo.mock.go -package {{.AppName}}_test
+//go:generate mockgen -source .\generate_test.go -destination .\app.mock.go -package {{.AppName}}_test

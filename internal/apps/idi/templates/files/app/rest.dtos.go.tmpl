@@ -1,0 +1,15 @@
+package rest
+
+import "{{.ProjectName}}/internal/dtos"
+
+type (
+	Find{{capitalize .AppName}}Response struct {
+		{{capitalize .AppName}} []*dtos.{{capitalize (trimS .AppName)}} `json:"{{.AppName}}"`
+	}
+	Create{{capitalize (trimS .AppName)}}Response struct {
+		{{capitalize (trimS .AppName)}}ID int64 `json:"{{capitalize (trimS .AppName)}}_id"`
+	}
+	Get{{capitalize (trimS .AppName)}}Response struct {
+		{{capitalize (trimS .AppName)}} *dtos.{{capitalize (trimS .AppName)}} `json:"{{trimS .AppName}}"`
+	}
+)

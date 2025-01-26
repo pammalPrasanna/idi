@@ -14,6 +14,7 @@ type config struct {
 	env             string
 	baseURL         string
 	trustedOrigins  []string
+	contextTimeout  time.Duration
 	{{if .IsAuth}}
 		{{if .IsPaseto}}
 			symmetricKey    string
@@ -24,12 +25,13 @@ type config struct {
 	{{end}}
 }
 
-// type default
+
 
 const (
 	defaultPort            int           = 4200
 	defaultENV             string        = "development"
 	defaultBaseURL         string        = "http://localhost:4200"
+	defaultContextTimeout  time.Duration = time.Second * 3
 	{{if .IsAuth}}
 		{{if .IsPaseto}}
 			defaultSymmetricKey    string        = "e4d91d0399a767f636b78172a72324cc"
@@ -46,6 +48,7 @@ var (
 	baseURL         = os.Getenv("BASE_URL")
 	trustedOrigins                 = os.Getenv("TRUSTED_ORIGINS")
 	defaulttrustedOrigins []string = []string{"*"}
+	contextTimeout  = os.Getenv("CONTEXT_TIMEOUT")
 	{{if .IsAuth}}
 		{{if .IsPaseto}}
 			symmetricKey    = os.Getenv("SYMMETRIC_KEY")
@@ -61,6 +64,7 @@ func configure() (cfg *config, err error) {
 		port:            defaultPort,
 		env:             defaultENV,
 		baseURL:         defaultBaseURL,
+		contextTimeout:  defaultContextTimeout,
 		{{if .IsAuth}}
 			{{if .IsPaseto}}
 				symmetricKey:    defaultSymmetricKey,
@@ -84,6 +88,14 @@ func configure() (cfg *config, err error) {
 
 	if baseURL != "" {
 		cfg.baseURL = baseURL
+	}
+
+	if contextTimeout != "" {
+		if i, err := strconv.Atoi(contextTimeout); err == nil {
+			cfg.contextTimeout = time.Duration(i) * time.Second
+		} else {
+			return nil, err
+		}
 	}
 
 	if trustedOrigins != "" {

@@ -1,7 +1,34 @@
 package dtos
 
-type Get{{capitalize .AppName}}Params struct {}
-type Find{{capitalize .AppName}}Params struct {}
-type Create{{capitalize .AppName}}Params struct {}
-type Update{{capitalize .AppName}}Params struct {}
-type Delete{{capitalize .AppName}}Params struct {}
+
+import "{{.ProjectName}}/internal/lib"
+
+type (
+	{{capitalize (trimS .AppName)}} struct {
+		ID          int64  `json:"id"`
+		Task        string `json:"task"`
+		Description string `json:"description"`
+		Archived    bool   `json:"archived"`
+		DueDate     string `json:"due_date"`
+		CreatedAt   string `json:"created_at"`
+		UpdatedAt   string `json:"updated_at"`
+	}
+	Get{{capitalize (trimS .AppName)}}Params struct {
+		ID int64
+	}
+	Find{{capitalize .AppName}}Params  struct{}
+	Create{{capitalize (trimS .AppName)}}Params struct {
+		Task        string    `json:"task"`
+		Description string    `json:"description"`
+		DueDate     lib.ITime `json:"due_date"`
+	}
+	Update{{capitalize (trimS .AppName)}}Params struct {
+		ID          int64     `json:"id"`
+		Description string    `json:"description"`
+		Task        string    `json:"task"`
+		DueDate     lib.ITime `json:"due_date"`
+	}
+	Delete{{capitalize (trimS .AppName)}}Params struct {
+		ID int64
+	}
+)

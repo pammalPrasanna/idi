@@ -1,17 +1,33 @@
 package application
 
 import (
+	"context"
+
 	{{if (ne .DBName "")}}"{{.ProjectName}}/internal/apps/{{.AppName}}/internal/application/ports"{{end}}
+	"{{.ProjectName}}/internal/dtos"
 	"{{.ProjectName}}/internal/lib"
+	"{{.ProjectName}}/internal/apps/{{.AppName}}/internal/application/domain"
 )
 
-type {{ capitalize .AppName }} struct {
-	RootApp  lib.IApp
-	{{if (ne .DBName "")}}
-	Repo ports.I{{capitalize .AppName}}Repository
-	{{end}}
+type (
+	{{ capitalize .AppName }} struct {
+		RootApp  lib.IApp
+		{{if (ne .DBName "")}}
+		Repo ports.I{{capitalize .AppName}}Repository
+		{{end}}
 
-}
+	}
+	
+	I{{capitalize .AppName}} interface {
+		Get{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Get{{capitalize (trimS .AppName)}}Params) (todo *dtos.{{capitalize (trimS .AppName)}}, err error)
+		Find{{capitalize .AppName}}(ctx context.Context, arg *dtos.Find{{capitalize .AppName}}Params) ({{.AppName}} []*dtos.{{capitalize (trimS .AppName)}}, err error)
+		Create{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Create{{capitalize (trimS .AppName)}}Params) (id int64, err error)
+		Update{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Update{{capitalize (trimS .AppName)}}Params) error
+		Delete{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Delete{{capitalize (trimS .AppName)}}Params) error
+	}
+
+)
+var _ I{{capitalize .AppName}} = (*{{capitalize .AppName}})(nil)
 
 {{if (ne .DBName "")}}
 func New(rootApp lib.IApp, db ports.I{{capitalize .AppName}}Repository) *{{capitalize .AppName}} {
@@ -27,3 +43,32 @@ func New(rootApp lib.IApp) *{{capitalize .AppName}} {
 	}
 }
 {{end}}
+
+
+func (t *{{ capitalize .AppName }}) Get{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Get{{ capitalize (trimS .AppName) }}Params) ({{trimS .AppName}} *dtos.{{ capitalize (trimS .AppName) }}, err error) {
+	return t.Repo.Get{{capitalize (trimS .AppName)}}(ctx, arg)
+}
+
+func (t *{{ capitalize .AppName }}) Find{{ capitalize .AppName }}(ctx context.Context, arg *dtos.Find{{ capitalize .AppName }}Params) ({{.AppName}} []*dtos.{{ capitalize (trimS .AppName) }}, err error) {
+	return t.Repo.Find{{capitalize .AppName}}(ctx, arg)
+}
+
+func (t *{{ capitalize .AppName }}) Create{{ capitalize (trimS .AppName) }}(ctx context.Context, arg *dtos.Create{{ capitalize (trimS .AppName) }}Params) (id int64, err error) {
+	_, err = domain.New{{capitalize (trimS .AppName)}}(arg.Task, arg.Description, arg.DueDate)
+	if err != nil {
+		return 0, err
+	}
+	return t.Repo.Create{{capitalize (trimS .AppName)}}(ctx, arg)
+}
+
+func (t *{{ capitalize .AppName }}) Update{{ capitalize (trimS .AppName) }}(ctx context.Context, arg *dtos.Update{{ capitalize (trimS .AppName) }}Params) error {
+	_, err := domain.New{{ capitalize (trimS .AppName) }}(arg.Task, arg.Description, arg.DueDate)
+	if err != nil {
+		return err
+	}
+	return t.Repo.Update{{ capitalize (trimS .AppName) }}(ctx, arg)
+}
+
+func (t *{{ capitalize .AppName }}) Delete{{ capitalize (trimS .AppName) }}(ctx context.Context, arg *dtos.Delete{{ capitalize (trimS .AppName) }}Params) error {
+	return t.Repo.Delete{{ capitalize (trimS .AppName) }}(ctx, arg)
+}

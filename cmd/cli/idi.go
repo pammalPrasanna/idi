@@ -15,12 +15,12 @@ var ErrNoCommand = errors.New("missing command")
 const none string = ""
 
 func Main() error {
-	projectName := flag.String("cp", none, "create project command: idi -cp [project name]")
-	appName := flag.String("ca", none, "create app command: idi -ca [app name]")
-	dbName := flag.String("cdb", none, "create db command: idi -cdb [mysql/postgres/sqlite3]")
-	routerName := flag.String("cr", "httprouter", "create router command: idi -cr [chi/httprouter/mux]")
-	isAuth := flag.Bool("auth", false, "create authentication flag: idi -cp -auth [default no auth]")
-	isPaseto := flag.Bool("paseto", false, "create paseto flag: idi -cp -auth -paseto [default JWT]")
+	projectName := flag.String("cp", none, "create project with flag: idi -cp [project name]")
+	appNames := flag.String("ca", none, "add one or more apps with flag: idi -ca [appname1,appname2]")
+	dbName := flag.String("cdb", none, "add db with flag: idi -cdb [mysql/postgres/sqlite3]")
+	routerName := flag.String("cr", "httprouter", "add router with flag: idi -cr [chi/httprouter/mux] (currently 'httprouter' only)")
+	isAuth := flag.Bool("auth", false, "add JWT authentication with flag: idi -cp -auth")
+	isPaseto := flag.Bool("paseto", false, "add Paseto instead of JWT with flag: idi -cp -auth -paseto")
 	showVersion := flag.Bool("v", false, "display version and exit")
 	flag.Parse()
 
@@ -29,7 +29,7 @@ func Main() error {
 		return nil
 	}
 
-	idi, err := idi.New(*projectName, *appName, *dbName, *routerName, *isAuth, *isPaseto)
+	idi, err := idi.New(*projectName, *appNames, *dbName, *routerName, *isAuth, *isPaseto)
 	if err != nil {
 		return err
 	}

@@ -2,40 +2,135 @@ package {{.DBName}}
 
 import (
 	"context"
+	"errors"
 	"database/sql"
 
 	"{{.ProjectName}}/internal/apps/{{.AppName}}/internal/application/ports"
 	"{{.ProjectName}}/internal/dtos"
+	"{{.ProjectName}}/internal/lib"
 )
 
 type {{capitalize .DBName}}Repository struct {
 	db *sql.DB
+	logger lib.ILogger
 }
 
 var _ ports.I{{capitalize .AppName}}Repository = (*{{capitalize .DBName}}Repository)(nil)
 
-func NewRepository(db *sql.DB) *{{capitalize .DBName}}Repository {
+func NewRepository(db *sql.DB, logger lib.ILogger) *{{capitalize .DBName}}Repository {
 	return &{{capitalize .DBName}}Repository{
 		db,
+		logger,
 	}
 }
 
-func (t {{capitalize .DBName}}Repository) Get{{capitalize .AppName}}(ctx context.Context, arg dtos.Get{{capitalize .AppName}}Params) error {
-	return nil
+
+const get{{capitalize (trimS .AppName)}}Stmt = `
+SELECT
+	id
+FROM
+	{{.AppName}}
+WHERE
+	id = ?
+LIMIT
+	1
+`
+func (t {{capitalize .DBName}}Repository) Get{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Get{{capitalize (trimS .AppName)}}Params) ({{trimS .AppName}} *dtos.{{capitalize (trimS .AppName)}}, err error) {
+	if arg.ID <= 0 {
+		return nil, lib.ErrNoRecord
+	}
+	row := t.db.QueryRowContext(ctx, get{{capitalize (trimS .AppName)}}Stmt, arg.ID)
+	{{trimS .AppName}} = &dtos.{{capitalize (trimS .AppName)}}{}
+	err = row.Scan(
+		&{{trimS .AppName}}.ID,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, lib.ErrNoRecord
+		}
+	}
+	return {{trimS .AppName}}, nil
 }
 
-func (t {{capitalize .DBName}}Repository) Find{{capitalize .AppName}}(ctx context.Context, arg dtos.Find{{capitalize .AppName}}Params) error {
-	return nil
+
+
+const list{{capitalize .AppName}}Stmt = `
+SELECT
+	id
+FROM
+	{{.AppName}}
+`
+func (t {{capitalize .DBName}}Repository) Find{{capitalize .AppName}}(ctx context.Context, arg *dtos.Find{{capitalize .AppName}}Params) ({{.AppName}} []*dtos.{{capitalize (trimS .AppName)}}, err error) {
+	rows, err := t.db.QueryContext(ctx, list{{capitalize .AppName}}Stmt)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		rowsErr := rows.Close()
+		if err == nil {
+			err = rowsErr
+		} else {
+			t.logger.Error("unable to close rows", "Find{{capitalize .AppName}}", err)
+		}
+	}()
+	items := []*dtos.{{capitalize (trimS .AppName)}}{}
+	for rows.Next() {
+		i := &dtos.{{capitalize (trimS .AppName)}}{}
+		if err := rows.Scan(
+			&i.ID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
-func (t {{capitalize .DBName}}Repository) Create{{capitalize .AppName}}(ctx context.Context, arg dtos.Create{{capitalize .AppName}}Params) error {
-	return nil
+const create{{capitalize (trimS .AppName)}}Stmt = `INSERT INTO
+	{{.AppName}} (task, description)
+VALUES
+	(?, ?) RETURNING id`
+func (t {{capitalize .DBName}}Repository) Create{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Create{{capitalize (trimS .AppName)}}Params) (id int64, err error) {
+	row := t.db.QueryRowContext(ctx, create{{capitalize (trimS .AppName)}}Stmt, arg.Task, arg.Description)
+	err = row.Scan(&id)
+	return id, err
 }
 
-func (t {{capitalize .DBName}}Repository) Update{{capitalize .AppName}}(ctx context.Context, arg dtos.Update{{capitalize .AppName}}Params) error {
-	return nil
+
+const update{{capitalize (trimS .AppName)}}Stmt = `
+UPDATE
+	{{.AppName}}
+set
+	task = ?,
+	description = ?
+WHERE
+	id = ?
+`
+func (t {{capitalize .DBName}}Repository) Update{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Update{{capitalize (trimS .AppName)}}Params) error {
+	if arg.ID <= 0 {
+		return lib.ErrNoRecord
+	}
+	_, err := t.db.ExecContext(ctx, update{{capitalize (trimS .AppName)}}Stmt, arg.Task, arg.Description, arg.ID)
+	return err 	
 }
 
-func (t {{capitalize .DBName}}Repository) Delete{{capitalize .AppName}}(ctx context.Context, arg dtos.Delete{{capitalize .AppName}}Params) error {
-	return nil
+
+const delete{{capitalize (trimS .AppName)}}Stmt = `
+DELETE FROM
+	{{.AppName}}
+WHERE
+	id = ?
+`
+func (t {{capitalize .DBName}}Repository) Delete{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Delete{{capitalize (trimS .AppName)}}Params) error {
+	if arg.ID <= 0 {
+		return lib.ErrNoRecord
+	}
+	_, err := t.db.ExecContext(ctx, delete{{capitalize (trimS .AppName)}}Stmt, arg.ID)
+	return err
 }

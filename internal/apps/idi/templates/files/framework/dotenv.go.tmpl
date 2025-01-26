@@ -1,4 +1,11 @@
+
+{{if eq .DBName "mysql"}}
+DB_DSN = "username:password@protocol(address)/dbname?param=value"
+{{else if eq .DBName "postgres"}}
+DB_DSN = "postgres://username:password@localhost:5432/dbname"
+{{else}}
 DB_DSN = "sqlite3.db"
+{{end}}
 DB_MAX_OPEN_CONNS = 25 
 DB_MAX_IDLE_CONNS = 25
 DB_CONN_MAX_IDLE_TIME = 5 # in minute

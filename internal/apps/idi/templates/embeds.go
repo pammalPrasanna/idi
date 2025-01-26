@@ -30,6 +30,12 @@ var ctrlrFile []byte
 //go:embed files/app/routes.go.tmpl
 var routeFile []byte
 
+//go:embed files/app/rest.dtos.go.tmpl
+var restDTOsFile []byte
+
+//go:embed files/app/gen.test.go.tmpl
+var genTestFile []byte
+
 // app files end
 
 // framework files start
@@ -88,7 +94,13 @@ var idiFile []byte
 //go:embed files/framework/middlewares.go.tmpl
 var middlewaresFile []byte
 
-//go:embed files/framework/dotenv.go.tmpl
-var dotEnvFile []byte
+//go:embed files/framework/http.dtos.go.tmpl
+var httpDTOsFile []byte
+
+//go:embed files/framework/itime.go.tmpl
+var itimeFile []byte
 
 // framework files end
+
+//go:embed files/framework/dotenv.go.tmpl
+var dotEnvFile []byte

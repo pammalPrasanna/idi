@@ -7,9 +7,9 @@ import (
 )
 
 type I{{capitalize .AppName}}Repository interface {
-	Get{{capitalize .AppName}}(ctx context.Context, arg dtos.Get{{capitalize .AppName}}Params) error
-	Find{{capitalize .AppName}}(ctx context.Context, arg dtos.Find{{capitalize .AppName}}Params) error
-	Create{{capitalize .AppName}}(ctx context.Context, arg dtos.Create{{capitalize .AppName}}Params) error
-	Update{{capitalize .AppName}}(ctx context.Context, arg dtos.Update{{capitalize .AppName}}Params) error
-	Delete{{capitalize .AppName}}(ctx context.Context, arg dtos.Delete{{capitalize .AppName}}Params) error
+	Get{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Get{{capitalize (trimS .AppName)}}Params) ({{trimS .AppName}} *dtos.{{capitalize (trimS .AppName)}}, err error)
+	Find{{capitalize .AppName}}(ctx context.Context, arg *dtos.Find{{capitalize .AppName}}Params) ({{.AppName}} []*dtos.{{capitalize (trimS .AppName)}}, err error)
+	Create{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Create{{capitalize (trimS .AppName)}}Params) (id int64, err error)
+	Update{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Update{{capitalize (trimS .AppName)}}Params) error
+	Delete{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Delete{{capitalize (trimS .AppName)}}Params) error
 }
