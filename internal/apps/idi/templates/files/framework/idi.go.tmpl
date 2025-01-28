@@ -12,7 +12,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-type idi struct {
+type {{.Alias}} struct {
 	*config
 
 	// rest.go
@@ -27,77 +27,77 @@ type idi struct {
 
 	// auth
 	customGetUserByID func(id int) (*IUser, error)
-	{{if .IsAuth}}auth.Maker{{end}}
+	{{if .IsAuth}}auth.IAuth{{end}}
 }
 
-var _ IApp = (*idi)(nil)
+var _ IApp = (*{{.Alias}})(nil)
 
-func Idi() (*idi, error) {
-	idi := &idi{}
+func {{capitalize .Alias}}() (*{{.Alias}}, error) {
+	{{.Alias}} := &{{.Alias}}{}
 
 	cfg, err := configure()
 	if err != nil {
 		return nil, err
 	}
-	idi.config = cfg
+	{{.Alias}}.config = cfg
 
-	idi.logger = newLogger(nil)
-	idi.router = httprouter.New()
+	{{.Alias}}.logger = newLogger(nil)
+	{{.Alias}}.router = httprouter.New()
 
 	// open DB connection(s)
 	conn, err := infra.{{capitalize .DBName}}()
 	if err != nil {
 		return nil, err
 	}
-	idi.{{.DBName}} = conn
+	{{.Alias}}.{{.DBName}} = conn
 
 {{if .IsAuth}}
 	{{if .IsPaseto}}
-	paseto, err := auth.NewPasetoMaker(idi.tokenExpiration, idi.symmetricKey, idi.baseURL)
+	paseto, err := auth.NewPasetoMaker({{.Alias}}.tokenExpiration, {{.Alias}}.symmetricKey, {{.Alias}}.baseURL)
 	if err != nil {
 		return nil, err
 	}
-	idi.Maker = paseto
+	{{.Alias}}.IAuth = paseto
 	{{else}}
-	jwt, err := auth.NewJWTMaker(idi.tokenExpiration, idi.jwtSecret, idi.baseURL)
+	jwt, err := auth.NewJWTMaker({{.Alias}}.tokenExpiration, {{.Alias}}.jwtSecret, {{.Alias}}.baseURL)
 	if err != nil {
 		return nil, err
 	}
-	idi.Maker = jwt
+	{{.Alias}}.IAuth = jwt
 	{{end}}
 {{end}}
-	server, err := newServer(idi.port, idi.router, idi.logger)
+	server, err := newServer({{.Alias}}.port, {{.Alias}}.router, {{.Alias}}.logger)
 	if err != nil {
 		return nil, err
 	}
-	idi.server = server
+	{{.Alias}}.server = server
 
 	// global middlewares
-{{if .IsAuth}}server.Handler = idi.authenticateM(server.Handler){{end}}
-	server.Handler = idi.recoverPanicM(server.Handler)
-	server.Handler = idi.loggerM(server.Handler)
-	server.Handler = idi.corsM(server.Handler)
+{{if .IsAuth}}server.Handler = {{.Alias}}.authenticateM(server.Handler){{end}}
+	server.Handler = {{.Alias}}.recoverPanicM(server.Handler)
+	server.Handler = {{.Alias}}.loggerM(server.Handler)
+	server.Handler = {{.Alias}}.corsM(server.Handler)
 
 	// static config
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	idi.router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
+	{{.Alias}}.router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
 
-	return idi, nil
+	return {{.Alias}}, nil
 }
 
-func (i *idi) {{capitalize .DBName}}() *sql.DB {
+func (i *{{.Alias}}) {{capitalize .DBName}}() *sql.DB {
 	return i.{{.DBName}}
 }
 
-func (i *idi) Mux() *httprouter.Router {
+func (i *{{.Alias}}) Mux() *httprouter.Router {
 	return i.router
 }
 
-func (i *idi) Logger() ILogger {
+func (i *{{.Alias}}) Logger() ILogger {
 	return i.logger
 }
 
-func (i *idi) GetUserById(id int) (*IUser, error) {
+func (i *{{.Alias}}) GetUserById(id int) (*IUser, error) {
 	if i.customGetUserByID == nil {
 		i.logger.Warn("unimplemented method: GetUserById")
 		return &IUser{ID: 2}, nil
@@ -106,6 +106,6 @@ func (i *idi) GetUserById(id int) (*IUser, error) {
 	}
 }
 
-func (i *idi) ContextTime() time.Duration {
+func (i *{{.Alias}}) ContextTime() time.Duration {
 	return i.contextTimeout
 }

@@ -1,21 +1,19 @@
 package api
 
 import (
-	{{if (ne .AppName "")}}
-	"{{.ProjectName}}/internal/apps/{{.AppName}}"
-	{{else}}
-	// "{{.ProjectName}}/internal/apps/someapp"
-	{{end}}
+	 {{range .AppNames}}
+	 "{{$.ProjectName}}/internal/apps/{{.}}"
+	 {{else}} 	
+	 // "{{.ProjectName}}/internal/apps/someapp"
+	 {{end}}
 	"{{.ProjectName}}/internal/lib"
 )
 
 func Main(rootApp lib.IApp) error {
-	{{if (ne .AppName "")}}
-	// inject root app to other apps
-	{{.AppName}}.InitApp(rootApp)
-	{{else}}
+	{{range .AppNames}}
+	{{.}}.InitApp(rootApp)
+	{{else}} 	
 	// someapp.InitApp(rootApp)
 	{{end}}
-
 	return rootApp.ServeHTTP()
 }

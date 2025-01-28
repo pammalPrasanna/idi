@@ -10,23 +10,25 @@ import (
 )
 
 type Templater struct {
+	AppNames    []string
 	projectPath string
 	ProjectName string
 	DBName      string
 	AppName     string
-	AppNames    []string
 	RouterName  string
+	Alias       string
 	IsAuth      bool
 	IsPaseto    bool
 }
 
-func New(projectPath, projectName, dbName, routerName string, appNames []string, isAuth, isPaseto bool) *Templater {
+func New(projectPath, projectName, dbName, routerName, alias string, appNames []string, isAuth, isPaseto bool) *Templater {
 	return &Templater{
+		AppNames:    appNames,
 		projectPath: projectPath,
 		ProjectName: projectName,
 		DBName:      dbName,
-		AppNames:    appNames,
 		RouterName:  routerName,
+		Alias:       alias,
 		IsAuth:      isAuth,
 		IsPaseto:    isPaseto,
 	}
@@ -106,11 +108,14 @@ func (t Templater) CreateApp() error {
 }
 
 func (t Templater) applyChoices(path string) string {
-	tempPath := strings.ReplaceAll(path, appKey, t.AppName)
-	tempPath = strings.ReplaceAll(tempPath, routerKey, t.RouterName)
-	tempPath = strings.ReplaceAll(tempPath, dbKey, t.DBName)
-	tempPath = strings.ReplaceAll(tempPath, projectKey, t.ProjectName)
-	return tempPath
+	if strings.Contains(path, "{") {
+		path = strings.ReplaceAll(path, appKey, t.AppName)
+		path = strings.ReplaceAll(path, routerKey, t.RouterName)
+		path = strings.ReplaceAll(path, dbKey, t.DBName)
+		path = strings.ReplaceAll(path, projectKey, t.ProjectName)
+		path = strings.ReplaceAll(path, aliasKeys, t.Alias)
+	}
+	return path
 }
 
 func (t Templater) createFiles(path string, filesMap map[string]*itemplate) error {

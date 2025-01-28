@@ -2,7 +2,7 @@ package auth
 
 import "errors"
 
-type Maker interface {
+type IAuth interface {
 	CreateToken(userID int) (*Token, error)
 	VerifyToken(token string) (string, error)
 }

@@ -76,7 +76,7 @@ func newServer(port int, router http.Handler, logger ILogger) (server *http.Serv
 	return server, nil
 }
 
-func (i *idi) ServeHTTP() error {
+func (i *{{.Alias}}) ServeHTTP() error {
 	// graceful shutdown
 	done := make(chan bool, 1)
 	go i.gracefulShutdown(done)
@@ -86,7 +86,7 @@ func (i *idi) ServeHTTP() error {
 	return i.server.ListenAndServe()
 }
 
-func (i *idi) gracefulShutdown(done chan bool) {
+func (i *{{.Alias}}) gracefulShutdown(done chan bool) {
 	// Create context that listens for the interrupt signal from the Oi.
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()

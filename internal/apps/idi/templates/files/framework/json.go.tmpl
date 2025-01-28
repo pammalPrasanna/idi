@@ -13,11 +13,11 @@ import (
 
 var jsonit = jsoniter.ConfigFastest
 
-func (i *idi) JSON(w http.ResponseWriter, status int, data any) error {
+func (i *{{.Alias}}) JSON(w http.ResponseWriter, status int, data any) error {
 	return i.JSONWithHeaders(w, status, data, nil)
 }
 
-func (i *idi) JSONWithHeaders(w http.ResponseWriter, status int, data any, headers http.Header) error {
+func (i *{{.Alias}}) JSONWithHeaders(w http.ResponseWriter, status int, data any, headers http.Header) error {
 	// js, err := json.Marshal(data)
 	js, err := jsonit.Marshal(data)
 	if err != nil {
@@ -37,15 +37,15 @@ func (i *idi) JSONWithHeaders(w http.ResponseWriter, status int, data any, heade
 	return nil
 }
 
-func (i *idi) DecodeJSON(w http.ResponseWriter, r *http.Request, dst interface{}) error {
+func (i *{{.Alias}}) DecodeJSON(w http.ResponseWriter, r *http.Request, dst interface{}) error {
 	return i.decodeJSON(w, r, dst, false)
 }
 
-func (i *idi) DecodeJSONStrict(w http.ResponseWriter, r *http.Request, dst interface{}) error {
+func (i *{{.Alias}}) DecodeJSONStrict(w http.ResponseWriter, r *http.Request, dst interface{}) error {
 	return i.decodeJSON(w, r, dst, true)
 }
 
-func (i *idi) decodeJSON(w http.ResponseWriter, r *http.Request, dst interface{}, disallowUnknownFields bool) error {
+func (i *{{.Alias}}) decodeJSON(w http.ResponseWriter, r *http.Request, dst interface{}, disallowUnknownFields bool) error {
 	maxBytes := 1_048_576
 	r.Body = http.MaxBytesReader(w, r.Body, int64(maxBytes))
 

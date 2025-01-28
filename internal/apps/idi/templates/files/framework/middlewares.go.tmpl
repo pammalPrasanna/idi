@@ -13,7 +13,7 @@ import (
 )
 
 {{if .IsAuth}}
-func (i *idi) authenticateM(next http.Handler) http.Handler {
+func (i *{{.Alias}}) authenticateM(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Vary", "Authorization")
 
@@ -53,7 +53,7 @@ func (i *idi) authenticateM(next http.Handler) http.Handler {
 	})
 }
 
-func (i *idi) RequireAuthenticatedUser(next http.HandlerFunc) http.HandlerFunc {
+func (i *{{.Alias}}) RequireAuthenticatedUser(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authenticatedUser := i.ContextGetAuthenticatedUser(r)
 
@@ -67,7 +67,7 @@ func (i *idi) RequireAuthenticatedUser(next http.HandlerFunc) http.HandlerFunc {
 }
 {{end}}
 
-func (i *idi) recoverPanicM(next http.Handler) http.Handler {
+func (i *{{.Alias}}) recoverPanicM(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			err := recover()
@@ -81,7 +81,7 @@ func (i *idi) recoverPanicM(next http.Handler) http.Handler {
 }
 
 // CORS middleware
-func (i *idi) corsM(next http.Handler) http.Handler {
+func (i *{{.Alias}}) corsM(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// CORS headers
 		if yes := slices.Contains(i.trustedOrigins, "*"); yes {
@@ -112,7 +112,7 @@ func (i *idi) corsM(next http.Handler) http.Handler {
 	})
 }
 
-func (i *idi) loggerM(next http.Handler) http.Handler {
+func (i *{{.Alias}}) loggerM(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		mw := newMetricsResponseWriter(w)
 		next.ServeHTTP(mw, r)

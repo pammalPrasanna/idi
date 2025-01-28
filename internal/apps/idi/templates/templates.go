@@ -66,7 +66,7 @@ var frameworkDefaultFiles = map[string]*itemplate{
 		content: metricsFile,
 	},
 	"idi.go": {
-		path:    "internal/lib/idi.go",
+		path:    "internal/lib/{alias}.go",
 		content: idiFile,
 	},
 	"middlewares.go": {

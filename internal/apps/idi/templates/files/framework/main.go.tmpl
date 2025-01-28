@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	idi, err := lib.Idi()
+	{{.Alias}}, err := lib.{{capitalize .Alias}}()
 	if err != nil {
 		fmt.Println(err)
 		trace := string(debug.Stack())
@@ -21,19 +21,19 @@ func main() {
 	{{if (ne .DBName "")}}
 	// handle DB close on application exit
 	defer func() {
-		if err := idi.{{capitalize .DBName}}().Close(); err != nil {
-			idi.Logger().Error("unable to close {{capitalize .DBName}}", "{{capitalize .DBName}}.Close()", err)
+		if err := {{.Alias}}.{{capitalize .DBName}}().Close(); err != nil {
+			{{.Alias}}.Logger().Error("unable to close {{capitalize .DBName}}", "{{capitalize .DBName}}.Close()", err)
 		} else {
-			idi.Logger().Info("closed {{capitalize .DBName}} successfully")
+			{{.Alias}}.Logger().Info("closed {{capitalize .DBName}} successfully")
 		}
 	}()
 	{{end}}
 
-	err = api.Main(idi)
+	err = api.Main({{.Alias}})
 	if err != nil {
 		trace := string(debug.Stack())
-		idi.Logger().Error("error: ", err)
-		idi.Logger().Error(err.Error(), "trace", trace)
+		{{.Alias}}.Logger().Error("error: ", err)
+		{{.Alias}}.Logger().Error(err.Error(), "trace", trace)
 		os.Exit(1)
 	}
 }

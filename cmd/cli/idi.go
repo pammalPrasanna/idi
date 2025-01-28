@@ -21,15 +21,15 @@ func Main() error {
 	routerName := flag.String("cr", "httprouter", "add router with flag: idi -cr [chi/httprouter/mux] (currently 'httprouter' only)")
 	isAuth := flag.Bool("auth", false, "add JWT authentication with flag: idi -cp -auth")
 	isPaseto := flag.Bool("paseto", false, "add Paseto instead of JWT with flag: idi -cp -auth -paseto")
+	alias := flag.String("a", "idi", "change root app name with flag: idi -alias 'myRootApp'")
 	showVersion := flag.Bool("v", false, "display version and exit")
 	flag.Parse()
-
 	if *showVersion {
 		fmt.Printf("version: %s\n", utils.Version())
 		return nil
 	}
 
-	idi, err := idi.New(*projectName, *appNames, *dbName, *routerName, *isAuth, *isPaseto)
+	idi, err := idi.New(*projectName, *appNames, *dbName, *routerName, *alias, *isAuth, *isPaseto)
 	if err != nil {
 		return err
 	}

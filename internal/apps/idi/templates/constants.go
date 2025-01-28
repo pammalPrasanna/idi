@@ -8,4 +8,5 @@ const (
 	appKey     = "{app_name}"
 	dbKey      = "{db_name}"
 	routerKey  = "{router_name}"
+	aliasKeys  = "{alias}"
 )
