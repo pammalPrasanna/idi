@@ -11,17 +11,26 @@ type slogLogger struct {
 	log *slog.Logger
 }
 
-var _ ILogger = (*slogLogger)(nil)
+var (
+	_      ILogger = (*slogLogger)(nil)
+	logger *slogLogger
+)
 
-func newLogger(out io.Writer) ILogger {
+func newLogger(out io.Writer) *slogLogger {
+	if logger != nil {
+		return logger
+	}
+
 	if out == nil {
 		out = os.Stdout
 	}
 
 	sl := slog.New(slog.NewJSONHandler(out, nil))
-	return &slogLogger{
+	logger = &slogLogger{
 		log: sl,
 	}
+
+	return logger
 }
 
 func (sl *slogLogger) Debug(msg string, keysAndValues ...interface{}) {

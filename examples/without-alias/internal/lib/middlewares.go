@@ -12,7 +12,7 @@ import (
 	"github.com/tomasen/realip"
 )
 
-func (i *idi) authenticateM(next http.Handler) http.Handler {
+func (i *idi) RequireAuthenticatedUser(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Vary", "Authorization")
 
@@ -44,22 +44,19 @@ func (i *idi) authenticateM(next http.Handler) http.Handler {
 
 				if user != nil {
 					r = i.contextSetAuthenticatedUser(r, user)
+				} else {
+					i.AuthenticationRequired(w, r)
+					return
 				}
 			}
 		}
 
-		next.ServeHTTP(w, r)
-	})
-}
+		// authenticatedUser := i.ContextGetAuthenticatedUser(r)
 
-func (i *idi) RequireAuthenticatedUser(next http.HandlerFunc) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authenticatedUser := i.ContextGetAuthenticatedUser(r)
-
-		if authenticatedUser == nil {
-			i.AuthenticationRequired(w, r)
-			return
-		}
+		// if authenticatedUser == nil {
+		// 	i.AuthenticationRequired(w, r)
+		// 	return
+		// }
 
 		next.ServeHTTP(w, r)
 	})

@@ -29,9 +29,14 @@ var (
 	writeTimeout          = os.Getenv("SERVER_WRITE_TIMEOUT")
 	shutdownPeriod        = os.Getenv("SERVER_GRACEFUL_SHUTDOWN_PERIOD")
 	defaultShutdownPeriod = 30 * time.Second
+	server                *http.Server
 )
 
-func newServer(port int, router http.Handler, logger ILogger) (server *http.Server, err error) {
+func newServer(port int, router http.Handler, logger ILogger) (*http.Server, error) {
+	if server != nil {
+		return server, nil
+	}
+
 	server = &http.Server{
 		Addr:         fmt.Sprintf("localhost:%d", port),
 		Handler:      router,

@@ -2,6 +2,8 @@ package lib
 
 import "errors"
 
+var ErrNoRecord = errors.New("no record found")
+
 type ErrInvalidData map[string][]string
 
 var _ error = (*ErrInvalidData)(nil)
@@ -13,5 +15,3 @@ func (e ErrInvalidData) Error() string {
 func (e ErrInvalidData) GetErrors() map[string][]string {
 	return e
 }
-
-var ErrNoRecord = errors.New("no record found")

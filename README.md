@@ -37,7 +37,7 @@
 </h4>
 
 ```bash
-go install github.com/pammalPrasanna/idi@v0.1.7
+go install github.com/pammalPrasanna/idi@v0.1.8
 ```
 
 This installs a go binary that will automatically bind to your $GOPATH

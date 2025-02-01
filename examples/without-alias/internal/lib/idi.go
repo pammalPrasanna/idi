@@ -16,7 +16,7 @@ type idi struct {
 	*config
 
 	// rest.go
-	logger ILogger
+	logger *slogLogger
 
 	// server.go
 	router *httprouter.Router
@@ -29,50 +29,56 @@ type idi struct {
 	auth.IAuth
 }
 
-var _ IApp = (*idi)(nil)
+var (
+	_    IApp = (*idi)(nil)
+	_idi *idi
+)
 
 func Idi() (*idi, error) {
-	idi := &idi{}
+	if _idi != nil {
+		return _idi, nil
+	}
+
+	_idi = &idi{}
 
 	cfg, err := configure()
 	if err != nil {
 		return nil, err
 	}
-	idi.config = cfg
+	_idi.config = cfg
 
-	idi.logger = newLogger(nil)
-	idi.router = httprouter.New()
+	_idi.logger = newLogger(nil)
+	_idi.router = httprouter.New()
 
 	// open DB connection(s)
 	conn, err := infra.Postgres()
 	if err != nil {
 		return nil, err
 	}
-	idi.postgres = conn
+	_idi.postgres = conn
 
-	jwt, err := auth.NewJWTMaker(idi.tokenExpiration, idi.jwtSecret, idi.baseURL)
+	jwt, err := auth.NewJWTMaker(_idi.tokenExpiration, _idi.jwtSecret, _idi.baseURL)
 	if err != nil {
 		return nil, err
 	}
-	idi.IAuth = jwt
+	_idi.IAuth = jwt
 
-	server, err := newServer(idi.port, idi.router, idi.logger)
+	server, err := newServer(_idi.port, _idi.router, _idi.logger)
 	if err != nil {
 		return nil, err
 	}
-	idi.server = server
+	_idi.server = server
 
 	// global middlewares
-	server.Handler = idi.authenticateM(server.Handler)
-	server.Handler = idi.recoverPanicM(server.Handler)
-	server.Handler = idi.loggerM(server.Handler)
-	server.Handler = idi.corsM(server.Handler)
+	server.Handler = _idi.recoverPanicM(server.Handler)
+	server.Handler = _idi.loggerM(server.Handler)
+	server.Handler = _idi.corsM(server.Handler)
 
 	// static config
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	idi.router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
+	_idi.router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
 
-	return idi, nil
+	return _idi, nil
 }
 
 func (i *idi) Postgres() *sql.DB {

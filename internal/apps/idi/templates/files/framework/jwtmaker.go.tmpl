@@ -14,15 +14,24 @@ type JWTMaker struct {
 	issuer   string
 }
 
-var _ IAuth = (*JWTMaker)(nil)
-
 const minsecretSize = 32
 
+var (
+	_ IAuth = (*JWTMaker)(nil)
+	tokenMaker *JWTMaker
+)
+
 func NewJWTMaker(duration time.Duration, secret string, issuer string) (*JWTMaker, error) {
+	if tokenMaker != nil {
+		return tokenMaker, nil
+	}
+
 	if len(secret) < minsecretSize {
 		return nil, fmt.Errorf("invalid key size: must be at least %d characters", minsecretSize)
 	}
-	return &JWTMaker{secret, duration, issuer}, nil
+	
+	tokenMaker = &JWTMaker{secret, duration, issuer}
+	return tokenMaker, nil
 }
 
 func (maker JWTMaker) CreateToken(userID int) (*Token, error) {

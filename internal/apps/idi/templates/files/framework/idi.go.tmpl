@@ -16,7 +16,7 @@ type {{.Alias}} struct {
 	*config
 
 	// rest.go
-	logger ILogger
+	logger *slogLogger
 
 	// server.go
 	router *httprouter.Router
@@ -30,59 +30,65 @@ type {{.Alias}} struct {
 	{{if .IsAuth}}auth.IAuth{{end}}
 }
 
-var _ IApp = (*{{.Alias}})(nil)
+var (
+	_ IApp = (*{{.Alias}})(nil)
+	_{{.Alias}} *{{.Alias}}
+)
 
 func {{capitalize .Alias}}() (*{{.Alias}}, error) {
-	{{.Alias}} := &{{.Alias}}{}
+	if _{{.Alias}} != nil {
+		return _{{.Alias}}, nil
+	}
+
+	_{{.Alias}} = &{{.Alias}}{}
 
 	cfg, err := configure()
 	if err != nil {
 		return nil, err
 	}
-	{{.Alias}}.config = cfg
+	_{{.Alias}}.config = cfg
 
-	{{.Alias}}.logger = newLogger(nil)
-	{{.Alias}}.router = httprouter.New()
+	_{{.Alias}}.logger = newLogger(nil)
+	_{{.Alias}}.router = httprouter.New()
 
 	// open DB connection(s)
 	conn, err := infra.{{capitalize .DBName}}()
 	if err != nil {
 		return nil, err
 	}
-	{{.Alias}}.{{.DBName}} = conn
+	_{{.Alias}}.{{.DBName}} = conn
 
 {{if .IsAuth}}
 	{{if .IsPaseto}}
-	paseto, err := auth.NewPasetoMaker({{.Alias}}.tokenExpiration, {{.Alias}}.symmetricKey, {{.Alias}}.baseURL)
+	paseto, err := auth.NewPasetoMaker(_{{.Alias}}.tokenExpiration, _{{.Alias}}.symmetricKey, _{{.Alias}}.baseURL)
 	if err != nil {
 		return nil, err
 	}
-	{{.Alias}}.IAuth = paseto
+	_{{.Alias}}.IAuth = paseto
 	{{else}}
-	jwt, err := auth.NewJWTMaker({{.Alias}}.tokenExpiration, {{.Alias}}.jwtSecret, {{.Alias}}.baseURL)
+	jwt, err := auth.NewJWTMaker(_{{.Alias}}.tokenExpiration, _{{.Alias}}.jwtSecret, _{{.Alias}}.baseURL)
 	if err != nil {
 		return nil, err
 	}
-	{{.Alias}}.IAuth = jwt
+	_{{.Alias}}.IAuth = jwt
 	{{end}}
 {{end}}
-	server, err := newServer({{.Alias}}.port, {{.Alias}}.router, {{.Alias}}.logger)
+	server, err := newServer(_{{.Alias}}.port, _{{.Alias}}.router, _{{.Alias}}.logger)
 	if err != nil {
 		return nil, err
 	}
-	{{.Alias}}.server = server
+	_{{.Alias}}.server = server
 
 	// global middlewares
-{{if .IsAuth}}server.Handler = {{.Alias}}.authenticateM(server.Handler){{end}}
-	server.Handler = {{.Alias}}.recoverPanicM(server.Handler)
-	server.Handler = {{.Alias}}.loggerM(server.Handler)
-	server.Handler = {{.Alias}}.corsM(server.Handler)
+	server.Handler = _{{.Alias}}.recoverPanicM(server.Handler)
+	server.Handler = _{{.Alias}}.loggerM(server.Handler)
+	server.Handler = _{{.Alias}}.corsM(server.Handler)
 
 	// static config
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	{{.Alias}}.router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
+	_{{.Alias}}.router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
 
-	return {{.Alias}}, nil
+	return _{{.Alias}}, nil
 }
 
 func (i *{{.Alias}}) {{capitalize .DBName}}() *sql.DB {

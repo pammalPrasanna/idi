@@ -16,7 +16,7 @@ type rootApp struct {
 	*config
 
 	// rest.go
-	logger ILogger
+	logger *slogLogger
 
 	// server.go
 	router *httprouter.Router
@@ -29,50 +29,56 @@ type rootApp struct {
 	auth.IAuth
 }
 
-var _ IApp = (*rootApp)(nil)
+var (
+	_        IApp = (*rootApp)(nil)
+	_rootApp *rootApp
+)
 
 func RootApp() (*rootApp, error) {
-	rootApp := &rootApp{}
+	if _rootApp != nil {
+		return _rootApp, nil
+	}
+
+	_rootApp = &rootApp{}
 
 	cfg, err := configure()
 	if err != nil {
 		return nil, err
 	}
-	rootApp.config = cfg
+	_rootApp.config = cfg
 
-	rootApp.logger = newLogger(nil)
-	rootApp.router = httprouter.New()
+	_rootApp.logger = newLogger(nil)
+	_rootApp.router = httprouter.New()
 
 	// open DB connection(s)
 	conn, err := infra.Sqlite3()
 	if err != nil {
 		return nil, err
 	}
-	rootApp.sqlite3 = conn
+	_rootApp.sqlite3 = conn
 
-	paseto, err := auth.NewPasetoMaker(rootApp.tokenExpiration, rootApp.symmetricKey, rootApp.baseURL)
+	paseto, err := auth.NewPasetoMaker(_rootApp.tokenExpiration, _rootApp.symmetricKey, _rootApp.baseURL)
 	if err != nil {
 		return nil, err
 	}
-	rootApp.IAuth = paseto
+	_rootApp.IAuth = paseto
 
-	server, err := newServer(rootApp.port, rootApp.router, rootApp.logger)
+	server, err := newServer(_rootApp.port, _rootApp.router, _rootApp.logger)
 	if err != nil {
 		return nil, err
 	}
-	rootApp.server = server
+	_rootApp.server = server
 
 	// global middlewares
-	server.Handler = rootApp.authenticateM(server.Handler)
-	server.Handler = rootApp.recoverPanicM(server.Handler)
-	server.Handler = rootApp.loggerM(server.Handler)
-	server.Handler = rootApp.corsM(server.Handler)
+	server.Handler = _rootApp.recoverPanicM(server.Handler)
+	server.Handler = _rootApp.loggerM(server.Handler)
+	server.Handler = _rootApp.corsM(server.Handler)
 
 	// static config
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	rootApp.router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
+	_rootApp.router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
 
-	return rootApp, nil
+	return _rootApp, nil
 }
 
 func (i *rootApp) Sqlite3() *sql.DB {
