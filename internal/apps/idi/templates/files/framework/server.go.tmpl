@@ -99,17 +99,22 @@ func (i *{{.Alias}}) gracefulShutdown(done chan bool) {
 	// Listen for the interrupt signal.
 	<-ctx.Done()
 
-	i.logger.Info("shutting down gracefully, press Ctrl+C again to force")
+	i.logger.Info("closing the database connection")
+	if err := i.{{.DBName}}.Close(); err != nil {
+		i.logger.Error("unable to close the database connection", "err: ", err)
+	}
+
+	i.logger.Info("shutting down the server gracefully, press ctrl+c again to force")
 
 	// The context is used to inform the server it has 5 seconds to finish
 	// the request it is currently handling
 	ctx, cancel := context.WithTimeout(context.Background(), defaultShutdownPeriod)
 	defer cancel()
 	if err := i.server.Shutdown(ctx); err != nil {
-		i.logger.Warn("Server forced to shutdown with error: %v", err)
+		i.logger.Warn("server forced to shutdown with error: %v", err)
 	}
 
-	i.logger.Warn("Server exiting")
+	i.logger.Info("server shutdown is complete")
 
 	// Notify the main goroutine that the shutdown is complete
 	done <- true

@@ -13,7 +13,10 @@ import (
 
 type (
 	IApp interface {
+		{{if ne .DBName ""}}
 		{{capitalize .DBName}}() *sql.DB
+		TearDownDB() error
+		{{end}}
 		Logger() ILogger
 
 		Mux() *httprouter.Router

@@ -1,11 +1,12 @@
 package lib
 
 import (
-	"database/sql"
+	{{if ne .DBName ""}}"database/sql"{{end}}
 	"net/http"
 	"time"
 
-	infra "{{.ProjectName}}/internal/infrastructure"
+	
+	{{if ne .DBName ""}}infra "{{.ProjectName}}/internal/infrastructure"{{end}}
 	{{if .IsAuth}}
 	"{{.ProjectName}}/internal/lib/auth"
 	{{end}}
@@ -22,9 +23,9 @@ type {{.Alias}} struct {
 	router *httprouter.Router
 	server *http.Server
 
-
+	{{if ne .DBName ""}}
 	{{.DBName}} *sql.DB
-
+	{{end}}
 	// auth
 	customGetUserByID func(id int) (*IUser, error)
 	{{if .IsAuth}}auth.IAuth{{end}}
@@ -35,7 +36,7 @@ var (
 	_{{.Alias}} *{{.Alias}}
 )
 
-func {{capitalize .Alias}}() (*{{.Alias}}, error) {
+func New{{capitalize .Alias}}() (*{{.Alias}}, error) {
 	if _{{.Alias}} != nil {
 		return _{{.Alias}}, nil
 	}
@@ -51,12 +52,14 @@ func {{capitalize .Alias}}() (*{{.Alias}}, error) {
 	_{{.Alias}}.logger = newLogger(nil)
 	_{{.Alias}}.router = httprouter.New()
 
+{{if ne .DBName ""}}
 	// open DB connection(s)
 	conn, err := infra.{{capitalize .DBName}}()
 	if err != nil {
 		return nil, err
 	}
 	_{{.Alias}}.{{.DBName}} = conn
+{{end}}
 
 {{if .IsAuth}}
 	{{if .IsPaseto}}
@@ -91,10 +94,6 @@ func {{capitalize .Alias}}() (*{{.Alias}}, error) {
 	return _{{.Alias}}, nil
 }
 
-func (i *{{.Alias}}) {{capitalize .DBName}}() *sql.DB {
-	return i.{{.DBName}}
-}
-
 func (i *{{.Alias}}) Mux() *httprouter.Router {
 	return i.router
 }
@@ -115,3 +114,13 @@ func (i *{{.Alias}}) GetUserById(id int) (*IUser, error) {
 func (i *{{.Alias}}) ContextTime() time.Duration {
 	return i.contextTimeout
 }
+
+{{if ne .DBName ""}}
+func (i *{{.Alias}}) {{capitalize .DBName}}() *sql.DB {
+	return i.{{.DBName}}
+}
+
+func (i *Idi) TearDownDB() error {
+	return i.{{.DBName}}.Close()
+}
+{{end}}

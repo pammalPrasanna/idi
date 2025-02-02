@@ -9,7 +9,7 @@ type (
 		Task        string `json:"task"`
 		Description string `json:"description"`
 		Archived    bool   `json:"archived"`
-		DueDate     string `json:"due_date"`
+		DueDate     lib.ITime `json:"due_date"`
 		CreatedAt   string `json:"created_at"`
 		UpdatedAt   string `json:"updated_at"`
 	}

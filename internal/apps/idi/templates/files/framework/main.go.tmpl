@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	{{.Alias}}, err := lib.{{capitalize .Alias}}()
+	{{.Alias}}, err := lib.New{{capitalize .Alias}}()
 	if err != nil {
 		fmt.Println(err)
 		trace := string(debug.Stack())
@@ -21,7 +21,7 @@ func main() {
 	{{if (ne .DBName "")}}
 	// handle DB close on application exit
 	defer func() {
-		if err := {{.Alias}}.{{capitalize .DBName}}().Close(); err != nil {
+		if err := {{.Alias}}.TearDownDB(); err != nil {
 			{{.Alias}}.Logger().Error("unable to close {{capitalize .DBName}}", "{{capitalize .DBName}}.Close()", err)
 		} else {
 			{{.Alias}}.Logger().Info("closed {{capitalize .DBName}} successfully")

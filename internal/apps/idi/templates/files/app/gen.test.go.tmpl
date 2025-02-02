@@ -1,4 +1,5 @@
-package todos_test
+package {{.AppName}}_test
 
-//go:generate mockgen -source ..\application\ports\{{.AppName}}.irepository.go -destination .\repo.mock.go -package {{.AppName}}_test
-//go:generate mockgen -source .\generate_test.go -destination .\app.mock.go -package {{.AppName}}_test
+//go:generate mockgen -source ..\apps\{{.AppName}}\internal\application\ports\{{.AppName}}.irepository.go -destination ..\apps\{{.AppName}}\internal\tests\mocks_test.go -package {{.AppName}}_test
+//go:generate mockgen -source ..\apps\{{.AppName}}\internal\application\{{.AppName}}.app.go -destination ..\apps\{{.AppName}}\internal\tests\mocks_test.go -package {{.AppName}}_test
+//go:generate mockgen -source ..\lib\types.go -destination ..\apps\{{.AppName}}\internal\tests\mocks_test.go -package {{.AppName}}_test

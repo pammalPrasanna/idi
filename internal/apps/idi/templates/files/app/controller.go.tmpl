@@ -10,19 +10,19 @@ import (
 	"{{.ProjectName}}/internal/lib"
 )
 
-type {{ capitalize .AppName }}Controller struct {
+type {{.AppName}}Controller struct {
 	lib.IApp
-	app *application.{{ capitalize .AppName }}
+	app application.I{{ capitalize .AppName }}
 }
 
-func new{{ capitalize .AppName }}Controller(rootApp lib.IApp, app *application.{{ capitalize .AppName }}) *{{ capitalize .AppName }}Controller {
-	return &{{ capitalize .AppName }}Controller{
+func New{{ capitalize .AppName }}Controller(rootApp lib.IApp, app application.I{{ capitalize .AppName }}) *{{ capitalize .AppName }}Controller {
+	return &{{.AppName}}Controller{
 		rootApp,
 		app,
 	}
 }
 
-func (tc *{{capitalize .AppName}}Controller) find{{capitalize .AppName}}H(w http.ResponseWriter, r *http.Request) {
+func (tc *{{.AppName}}Controller) find{{capitalize .AppName}}H(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), tc.ContextTime())
 	defer cancel()
 
@@ -45,7 +45,7 @@ func (tc *{{capitalize .AppName}}Controller) find{{capitalize .AppName}}H(w http
 	})
 }
 
-func (tc *{{capitalize .AppName}}Controller) create{{capitalize .AppName}}H(w http.ResponseWriter, r *http.Request) {
+func (tc *{{.AppName}}Controller) create{{capitalize .AppName}}H(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), tc.ContextTime())
 	defer cancel()
 
@@ -72,7 +72,7 @@ func (tc *{{capitalize .AppName}}Controller) create{{capitalize .AppName}}H(w ht
 	})
 }
 
-func (tc *{{capitalize .AppName}}Controller) get{{capitalize .AppName}}H(w http.ResponseWriter, r *http.Request) {
+func (tc *{{.AppName}}Controller) get{{capitalize .AppName}}H(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), tc.ContextTime())
 	defer cancel()
 
@@ -101,7 +101,7 @@ func (tc *{{capitalize .AppName}}Controller) get{{capitalize .AppName}}H(w http.
 	})
 }
 
-func (tc *{{capitalize .AppName}}Controller) update{{capitalize .AppName}}H(w http.ResponseWriter, r *http.Request) {
+func (tc *{{.AppName}}Controller) update{{capitalize .AppName}}H(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), tc.ContextTime())
 	defer cancel()
 
@@ -139,7 +139,7 @@ func (tc *{{capitalize .AppName}}Controller) update{{capitalize .AppName}}H(w ht
 	})
 }
 
-func (tc *{{capitalize .AppName}}Controller) delete{{capitalize .AppName}}H(w http.ResponseWriter, r *http.Request) {
+func (tc *{{.AppName}}Controller) delete{{capitalize .AppName}}H(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), tc.ContextTime())
 	defer cancel()
 
