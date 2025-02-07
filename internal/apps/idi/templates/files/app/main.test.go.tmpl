@@ -1,0 +1,84 @@
+package {{.AppName}}_test
+
+import (
+	"database/sql"
+	"fmt"
+	"log"
+	"os"
+	"os/exec"
+	"testing"
+
+	"{{.ProjectName}}/internal/lib"
+
+	"github.com/joho/godotenv"
+)
+
+const dbfile string = "testdb.db"
+
+var (
+	dbConn  *sql.DB
+	rootApp lib.IApp
+)
+
+func setupTestDB(m *testing.M) (int, error) {
+	{{if eq .DBName "sqlite3"}}
+	if os.Getenv("INTEGRATION_TEST") != "true" {
+		fmt.Println("skipping database setup")
+		return m.Run(), nil
+	}
+
+	var err error
+
+	f, err := os.Create(dbfile)
+	if err != nil {
+		return -1, err
+	}
+
+	cmd := exec.Command("goose",
+		"-s", "-dir=../../../../../migrations", "sqlite3", dbfile, "up",
+	)
+
+	if err := cmd.Run(); err != nil {
+		log.Fatal(err)
+	}
+
+	conn, err := sql.Open("sqlite3", f.Name())
+	if err != nil {
+		return -1, err
+	}
+
+	dbConn = conn
+
+	defer func() {
+		if ferr := f.Close(); ferr != nil {
+			if err == nil {
+				err = ferr
+			}
+			log.Fatalf("unable to close testdb file with error: %s", ferr)
+		}
+		if err := dbConn.Close(); err != nil {
+			log.Fatalf("unable to close DB with error: '%s'", err)
+		}
+		if err := os.RemoveAll(dbfile); err != nil {
+			log.Fatalf("unable to delete testdb with error: %s", err)
+		}
+	}()
+	{{end}}
+
+	return m.Run(), nil
+}
+
+func TestMain(m *testing.M) {
+	godotenv.Load("../../../../../.env")
+	ra, err := lib.{{capitalize .Alias}}()
+	if err != nil {
+		log.Printf("unable to create root app: %s", err)
+        os.Exit(-1)
+	}
+	rootApp = ra
+	code, err := setupTestDB(m)
+	if err != nil {
+		log.Printf("unable to create test db connection: %s", err)
+	}
+	os.Exit(code)
+}

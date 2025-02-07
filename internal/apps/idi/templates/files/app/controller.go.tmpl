@@ -15,14 +15,14 @@ type {{ capitalize .AppName }}Controller struct {
 	app *application.{{ capitalize .AppName }}
 }
 
-func new{{ capitalize .AppName }}Controller(rootApp lib.IApp, app *application.{{ capitalize .AppName }}) *{{ capitalize .AppName }}Controller {
+func New{{ capitalize .AppName }}Controller(rootApp lib.IApp, app *application.{{ capitalize .AppName }}) *{{ capitalize .AppName }}Controller {
 	return &{{ capitalize .AppName }}Controller{
 		rootApp,
 		app,
 	}
 }
 
-func (tc *{{capitalize .AppName}}Controller) find{{capitalize .AppName}}H(w http.ResponseWriter, r *http.Request) {
+func (tc *{{capitalize .AppName}}Controller) Find{{capitalize .AppName}}H(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), tc.ContextTime())
 	defer cancel()
 
@@ -30,13 +30,7 @@ func (tc *{{capitalize .AppName}}Controller) find{{capitalize .AppName}}H(w http
 
 	{{.AppName}}, err := tc.app.Find{{capitalize .AppName}}(ctx, &dtos.Find{{capitalize .AppName}}Params{})
 	if err != nil {
-		// data error
-		if errors.As(err, &lib.ErrInvalidData{}) {
-			tc.UnprocessableEntity(w, r, err)
-			return
-		}
-		// db error
-		tc.ServerError(w, r, err)
+		tc.handleError(w, r, err)
 		return
 	}
 
@@ -45,7 +39,7 @@ func (tc *{{capitalize .AppName}}Controller) find{{capitalize .AppName}}H(w http
 	})
 }
 
-func (tc *{{capitalize .AppName}}Controller) create{{capitalize .AppName}}H(w http.ResponseWriter, r *http.Request) {
+func (tc *{{capitalize .AppName}}Controller) Create{{capitalize .AppName}}H(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), tc.ContextTime())
 	defer cancel()
 
@@ -57,14 +51,8 @@ func (tc *{{capitalize .AppName}}Controller) create{{capitalize .AppName}}H(w ht
 
 	id, err := tc.app.Create{{capitalize (trimS .AppName)}}(ctx, args)
 	if err != nil {
-		// data error
-		if errors.As(err, &lib.ErrInvalidData{}) {
-			e := err.(lib.ErrInvalidData)
-			tc.UnprocessableEntity(w, r, &dtos.HTTPErrs{
-				Errors: e.GetErrors(),
-			})
-			return
-		}
+		tc.handleError(w, r, err)
+		return
 	}
 
 	tc.JSON(w, http.StatusOK, &Create{{capitalize (trimS .AppName)}}Response{
@@ -72,7 +60,7 @@ func (tc *{{capitalize .AppName}}Controller) create{{capitalize .AppName}}H(w ht
 	})
 }
 
-func (tc *{{capitalize .AppName}}Controller) get{{capitalize .AppName}}H(w http.ResponseWriter, r *http.Request) {
+func (tc *{{capitalize .AppName}}Controller) Get{{capitalize .AppName}}H(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), tc.ContextTime())
 	defer cancel()
 
@@ -82,26 +70,20 @@ func (tc *{{capitalize .AppName}}Controller) get{{capitalize .AppName}}H(w http.
 		return
 	}
 
-	todo, err := tc.app.Get{{capitalize (trimS .AppName)}}(ctx, &dtos.Get{{capitalize (trimS .AppName)}}Params{
+	{{trimS .AppName}}, err := tc.app.Get{{capitalize (trimS .AppName)}}(ctx, &dtos.Get{{capitalize (trimS .AppName)}}Params{
 		ID: id,
 	})
 	if err != nil {
-		if errors.Is(err, lib.ErrNoRecord) {
-			tc.JSON(w, http.StatusNotFound, &dtos.HTTPErrMsg{
-				Error: "todo not found",
-			})
-			return
-		}
-		tc.ServerError(w, r, err)
+		tc.handleError(w, r, err)
 		return
 	}
 
 	tc.JSON(w, http.StatusOK, &Get{{capitalize (trimS .AppName)}}Response{
-		{{capitalize (trimS .AppName)}}: todo,
+		{{capitalize (trimS .AppName)}}: {{trimS .AppName}},
 	})
 }
 
-func (tc *{{capitalize .AppName}}Controller) update{{capitalize .AppName}}H(w http.ResponseWriter, r *http.Request) {
+func (tc *{{capitalize .AppName}}Controller) Update{{capitalize .AppName}}H(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), tc.ContextTime())
 	defer cancel()
 
@@ -120,17 +102,7 @@ func (tc *{{capitalize .AppName}}Controller) update{{capitalize .AppName}}H(w ht
 
 	err = tc.app.Update{{capitalize (trimS .AppName)}}(ctx, args)
 	if err != nil {
-		if errors.As(err, &lib.ErrInvalidData{}) {
-			e := err.(lib.ErrInvalidData)
-			tc.UnprocessableEntity(w, r, &dtos.HTTPErrs{
-				Errors: e.GetErrors(),
-			})
-			return
-		} else if errors.Is(err, lib.ErrNoRecord) {
-			tc.NotFound(w, r)
-			return
-		}
-		tc.ServerError(w, r, err)
+		tc.handleError(w, r, err)
 		return
 	}
 
@@ -139,7 +111,7 @@ func (tc *{{capitalize .AppName}}Controller) update{{capitalize .AppName}}H(w ht
 	})
 }
 
-func (tc *{{capitalize .AppName}}Controller) delete{{capitalize .AppName}}H(w http.ResponseWriter, r *http.Request) {
+func (tc *{{capitalize .AppName}}Controller) Delete{{capitalize .AppName}}H(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), tc.ContextTime())
 	defer cancel()
 
@@ -153,15 +125,29 @@ func (tc *{{capitalize .AppName}}Controller) delete{{capitalize .AppName}}H(w ht
 		ID: id,
 	})
 	if err != nil {
-		if errors.Is(err, lib.ErrNoRecord) {
-			tc.NotFound(w, r)
-			return
-		}
-		tc.ServerError(w, r, err)
+		tc.handleError(w, r, err)
 		return
 	}
 
 	tc.JSON(w, http.StatusOK, &dtos.HTTPMsg{
 		Message: "deleted successfully",
 	})
+}
+
+
+func (tc *{{capitalize .AppName}}Controller) handleError(w http.ResponseWriter, r *http.Request, err error) {
+	switch {
+		case errors.As(err, &lib.ErrInvalidData{}):
+			e := err.(lib.ErrInvalidData)
+			tc.UnprocessableEntity(w, r, &dtos.HTTPErrs{
+				Errors: e.GetErrors(),
+			})
+			return
+		case errors.Is(err, lib.ErrNoRecord):
+			tc.NotFound(w, r)
+			return
+		default:
+			tc.ServerError(w, r, err)
+			return
+	}
 }

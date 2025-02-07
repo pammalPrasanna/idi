@@ -81,6 +81,10 @@ var frameworkDefaultFiles = map[string]*itemplate{
 		path:    ".env",
 		content: dotEnvFile,
 	},
+	"makeFile": {
+		path:    "Makefile",
+		content: makeFile,
+	},
 	// framework files end
 }
 
@@ -134,6 +138,7 @@ var appDefaultFolders = map[string]string{
 
 var appDBFolders = map[string]string{
 	"DB": "internal/apps/{app_name}/internal/adapters/{db_name}",
+	"migrations": "migrations",
 	// "sqlc": "internal/apps/{app_name}/internal/sqlc",
 }
 
@@ -145,6 +150,10 @@ var appDBFiles = map[string]*itemplate{
 	"repository.go": {
 		path:    "internal/apps/{app_name}/internal/adapters/{db_name}/{db_name}.repository.go",
 		content: repoFile,
+	},
+	"users.sql": {
+		path: "migrations/00001_create_users_table.sql",
+		content: usersSQLFile,
 	},
 }
 
@@ -184,6 +193,14 @@ var appDefaultFiles = map[string]*itemplate{
 	"generate_test.go": {
 		path:    "internal/apps/{app_name}/internal/tests/generate_test.go",
 		content: genTestFile,
+	},
+	"repository_test.go": {
+		path:    "internal/apps/{app_name}/internal/tests/repository_test.go",
+		content: repoTestFile,
+	},
+	"main_test.go": {
+		path:    "internal/apps/{app_name}/internal/tests/main_test.go",
+		content: mainTestFile,
 	},
 }
 

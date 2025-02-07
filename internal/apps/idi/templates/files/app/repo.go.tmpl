@@ -45,8 +45,12 @@ func (t {{capitalize .DBName}}Repository) Get{{capitalize (trimS .AppName)}}(ctx
 		&{{trimS .AppName}}.ID,
 	)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
 			return nil, lib.ErrNoRecord
+
+		default:
+			return nil, err
 		}
 	}
 	return {{trimS .AppName}}, nil
@@ -63,33 +67,27 @@ FROM
 func (t {{capitalize .DBName}}Repository) Find{{capitalize .AppName}}(ctx context.Context, arg *dtos.Find{{capitalize .AppName}}Params) ({{.AppName}} []*dtos.{{capitalize (trimS .AppName)}}, err error) {
 	rows, err := t.db.QueryContext(ctx, list{{capitalize .AppName}}Stmt)
 	if err != nil {
+		t.logger.Error("unable to query rows", "Find{{capitalize .AppName}}", err)
 		return nil, err
 	}
 	defer func() {
 		rowsErr := rows.Close()
-		if err == nil {
-			err = rowsErr
-		} else {
-			t.logger.Error("unable to close rows", "Find{{capitalize .AppName}}", err)
-		}
+		t.logger.Error("unable to close rows", "Find{{capitalize .AppName}}", rowsErr)
+		err = errors.Join(err, rowsErr)
 	}()
 	items := []*dtos.{{capitalize (trimS .AppName)}}{}
 	for rows.Next() {
 		i := &dtos.{{capitalize (trimS .AppName)}}{}
-		if err := rows.Scan(
+		if rowErr := rows.Scan(
 			&i.ID,
-		); err != nil {
+		); rowErr != nil {
+			t.logger.Error("rows Scan() got errors", "Find{{.AppName}}", rowErr)
+			err = errors.Join(err, rowErr)
 			return nil, err
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+	return items, err
 }
 
 const create{{capitalize (trimS .AppName)}}Stmt = `INSERT INTO

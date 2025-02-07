@@ -1,46 +1,44 @@
-package {{.AppName}}_test
+package users_test
 
-//go:generate mockgen -source .\generate_test.go -destination .\mocks_test.go  -package {{.AppName}}_test
+//go:generate mockgen -source .\generate_test.go -destination .\mocks_test.go  -package users_test
 
 import (
+	"asdf/internal/dtos"
+	"asdf/internal/lib"
+	"asdf/internal/lib/auth"
 	"context"
 	"database/sql"
 	"log/slog"
 	"net/http"
-	"{{.ProjectName}}/internal/dtos"
-	"{{.ProjectName}}/internal/lib"
-	"{{.ProjectName}}/internal/lib/auth"
 	"time"
 
 	"github.com/julienschmidt/httprouter"
 )
 
-
-
 type (
-		I{{capitalize .AppName}} interface {
-			Get{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Get{{capitalize (trimS .AppName)}}Params) (todo *dtos.{{capitalize (trimS .AppName)}}, err error)
-			Find{{capitalize .AppName}}(ctx context.Context, arg *dtos.Find{{capitalize .AppName}}Params) ({{.AppName}} []*dtos.{{capitalize (trimS .AppName)}}, err error)
-			Create{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Create{{capitalize (trimS .AppName)}}Params) (id int64, err error)
-			Update{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Update{{capitalize (trimS .AppName)}}Params) error
-			Delete{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Delete{{capitalize (trimS .AppName)}}Params) error
-		}
+	IUsers interface {
+		GetUser(ctx context.Context, arg *dtos.GetUserParams) (todo *dtos.User, err error)
+		FindUsers(ctx context.Context, arg *dtos.FindUsersParams) (users []*dtos.User, err error)
+		CreateUser(ctx context.Context, arg *dtos.CreateUserParams) (id int64, err error)
+		UpdateUser(ctx context.Context, arg *dtos.UpdateUserParams) error
+		DeleteUser(ctx context.Context, arg *dtos.DeleteUserParams) error
+	}
 
-		I{{capitalize .AppName}}Repository interface {
-			Get{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Get{{capitalize (trimS .AppName)}}Params) ({{trimS .AppName}} *dtos.{{capitalize (trimS .AppName)}}, err error)
-			Find{{capitalize .AppName}}(ctx context.Context, arg *dtos.Find{{capitalize .AppName}}Params) ({{.AppName}} []*dtos.{{capitalize (trimS .AppName)}}, err error)
-			Create{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Create{{capitalize (trimS .AppName)}}Params) (id int64, err error)
-			Update{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Update{{capitalize (trimS .AppName)}}Params) error
-			Delete{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Delete{{capitalize (trimS .AppName)}}Params) error
-		}
+	IUsersRepository interface {
+		GetUser(ctx context.Context, arg *dtos.GetUserParams) (user *dtos.User, err error)
+		FindUsers(ctx context.Context, arg *dtos.FindUsersParams) (users []*dtos.User, err error)
+		CreateUser(ctx context.Context, arg *dtos.CreateUserParams) (id int64, err error)
+		UpdateUser(ctx context.Context, arg *dtos.UpdateUserParams) error
+		DeleteUser(ctx context.Context, arg *dtos.DeleteUserParams) error
+	}
 
-		IApp interface {
-		{{capitalize .DBName}}() *sql.DB
+	IApp interface {
+		Sqlite3() *sql.DB
 		Logger() lib.ILogger
 
 		Mux() *httprouter.Router
 		ServeHTTP() error
-		
+
 		// context
 		ContextTime() time.Duration
 
@@ -50,7 +48,6 @@ type (
 		DecodeJSON(w http.ResponseWriter, r *http.Request, dst interface{}) error
 		DecodeJSONStrict(w http.ResponseWriter, r *http.Request, dst interface{}) error
 
-	{{if .IsAuth}}
 		// Auth helpers
 		Hash(plaintextPassword string) (string, error)
 		CompareHashAndPassword(plaintextPassword, hashedPassword string) (bool, error)
@@ -59,7 +56,7 @@ type (
 		RequireAuthenticatedUser(next http.HandlerFunc) http.HandlerFunc
 		GetUserById(id int) (*lib.IUser, error)
 		SetUserByIDMethod(fn func(id int) (*lib.IUser, error))
-	{{end}}
+
 		// rest helpers
 		BadRequest(w http.ResponseWriter, r *http.Request, err error)         // 400
 		AuthenticationRequired(w http.ResponseWriter, r *http.Request)        // 401
@@ -68,7 +65,7 @@ type (
 		MethodNotAllowed(w http.ResponseWriter, r *http.Request)              // 405
 		UnprocessableEntity(w http.ResponseWriter, r *http.Request, data any) // 422
 		ServerError(w http.ResponseWriter, r *http.Request, err error)        // 500
-		
+
 		ParseIntFromRequest(name string, r *http.Request) (int64, error)
 	}
 
@@ -80,6 +77,4 @@ type (
 		Fatal(msg string, keysAndValues ...interface{})
 		Handler() slog.Handler
 	}
-
-
 )

@@ -36,6 +36,15 @@ var restDTOsFile []byte
 //go:embed files/app/gen.test.go.tmpl
 var genTestFile []byte
 
+//go:embed files/app/repository.test.go.tmpl
+var repoTestFile []byte
+
+//go:embed files/app/main.test.go.tmpl
+var mainTestFile []byte
+
+//go:embed files/app/users.sql.tmpl
+var usersSQLFile []byte
+
 // app files end
 
 // framework files start
@@ -100,7 +109,9 @@ var httpDTOsFile []byte
 //go:embed files/framework/itime.go.tmpl
 var itimeFile []byte
 
-// framework files end
+//go:embed files/framework/makefile.go.tmpl
+var makeFile []byte
 
 //go:embed files/framework/dotenv.go.tmpl
 var dotEnvFile []byte
+// framework files end

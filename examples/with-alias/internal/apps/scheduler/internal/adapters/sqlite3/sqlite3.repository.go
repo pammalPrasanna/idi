@@ -49,7 +49,7 @@ func (t Sqlite3Repository) GetScheduler(ctx context.Context, arg *dtos.GetSchedu
 			return nil, lib.ErrNoRecord
 		}
 	}
-	return scheduler, nil
+	return scheduler, err
 }
 
 const listSchedulerStmt = `
@@ -88,7 +88,7 @@ func (t Sqlite3Repository) FindScheduler(ctx context.Context, arg *dtos.FindSche
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
-	return items, nil
+	return items, err
 }
 
 const createSchedulerStmt = `INSERT INTO

@@ -1,0 +1,27 @@
+.PHONY: generate createsql testv testdox migrateup migratedown
+
+run:
+	go run .{{pathSep}}...
+
+generate:
+	go generate .{{pathSep}}...
+	go mod tidy
+	go fmt .{{pathSep}}...
+
+testv:
+	go run .{{pathSep}}... -count=1 -race --shuffle "on" -v -codecoverage
+
+testdox:
+	gotestdox .{{pathSep}}... -count=1 -race --shuffle "on" -v -codecoverage
+
+createsql:
+	goose -s -dir .{{pathSep}}migrations create ${t} sql
+
+{{if eq .DBName "sqlite3"}}
+migrateup:
+	goose -s -dir .{{pathSep}}migrations sqlite3 .{{pathSep}}sqlite3.db up
+
+migratedown:
+	goose -s -dir .{{pathSep}}migrations sqlite3 .{{pathSep}}sqlite3.db down
+
+{{end}}

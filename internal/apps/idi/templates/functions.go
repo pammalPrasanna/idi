@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"os"
 	"strings"
 	"text/template"
 )
@@ -20,7 +21,12 @@ func trimS(txt string) string {
 	return txt
 }
 
+func pathSep() string {
+	return string(os.PathSeparator)
+}
+
 var templateFunctions = template.FuncMap{
 	"capitalize": capitalize,
 	"trimS":      trimS,
+	"pathSep": pathSep,
 }

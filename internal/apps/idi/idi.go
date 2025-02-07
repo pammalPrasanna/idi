@@ -133,10 +133,17 @@ func (i Idi) idiProjectExists() (string, error) {
 
 	appsDir := filepath.Join(cwd, "/internal/apps")
 
-	if _, err := os.Stat(appsDir); errors.Is(err, fs.ErrNotExist) {
-		return "", errors.New(`idi project structure not found:
-		1. '{current_working_directory}/internal/apps'
-		2. '{current_working_directory}/internal/dtos'`)
+	_, err = os.Stat(appsDir)
+	if err != nil {
+		switch {
+		case errors.Is(err, fs.ErrNotExist):
+			return "", errors.New(`idi project structure not found:
+				1. '{current_working_directory}/internal/apps'
+				2. '{current_working_directory}/internal/dtos'`)
+
+		default:
+			return "", err
+		}
 	}
 
 	return cwd, nil

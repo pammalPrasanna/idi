@@ -9,12 +9,12 @@ import (
 )
 
 func RegisterRoutes(rootApp lib.IApp, app *application.{{ capitalize .AppName }}) {
-	ctrlr := new{{ capitalize .AppName }}Controller(rootApp, app)
+	ctrlr := New{{ capitalize .AppName }}Controller(rootApp, app)
 	mux := ctrlr.Mux()
 
-	mux.HandlerFunc(http.MethodGet, "/{{.AppName}}", ctrlr.find{{capitalize .AppName}}H)
-	mux.HandlerFunc(http.MethodGet, "/{{.AppName}}/:id", ctrlr.get{{capitalize .AppName}}H)
-	mux.HandlerFunc(http.MethodPost, "/{{.AppName}}", ctrlr.create{{capitalize .AppName}}H)
-	mux.HandlerFunc(http.MethodPut, "/{{.AppName}}", ctrlr.update{{capitalize .AppName}}H)
-	mux.HandlerFunc(http.MethodDelete, "/{{.AppName}}", ctrlr.delete{{capitalize .AppName}}H)
+	mux.HandlerFunc(http.MethodGet, "/{{.AppName}}", ctrlr.Find{{capitalize .AppName}}H)
+	mux.HandlerFunc(http.MethodGet, "/{{.AppName}}/:id", ctrlr.Get{{capitalize .AppName}}H)
+	mux.HandlerFunc(http.MethodPost, "/{{.AppName}}", ctrlr.Create{{capitalize .AppName}}H)
+	mux.HandlerFunc(http.MethodPut, "/{{.AppName}}", ctrlr.Update{{capitalize .AppName}}H)
+	mux.HandlerFunc(http.MethodDelete, "/{{.AppName}}", ctrlr.Delete{{capitalize .AppName}}H)
 }

@@ -1,0 +1,69 @@
+package {{.AppName}}_test
+
+import (
+	"testing"
+
+	"{{.ProjectName}}/internal/dtos"
+)
+
+var valid{{capitalize (trimS .AppName)}} *dtos.Create{{capitalize (trimS .AppName)}}Params
+
+func createValid{{capitalize (trimS .AppName)}}(t *testing.T) *dtos.Create{{capitalize (trimS .AppName)}}Params {
+	t.Helper()
+
+	if valid{{capitalize (trimS .AppName)}} != nil {
+		return valid{{capitalize (trimS .AppName)}}
+	}
+
+	valid{{capitalize (trimS .AppName)}} = &dtos.Create{{capitalize (trimS .AppName)}}Params{
+		{{capitalize (trimS .AppName)}}name: "user1",
+		Email:    "user1@email.com",
+		Password: "adsfi9he",
+	}
+
+	return valid{{capitalize (trimS .AppName)}}
+}
+
+func createInvalid{{capitalize (trimS .AppName)}}(t *testing.T, field string) *dtos.Create{{capitalize (trimS .AppName)}}Params {
+	t.Helper()
+
+	invalid{{capitalize (trimS .AppName)}} := &dtos.Create{{capitalize (trimS .AppName)}}Params{
+		{{capitalize (trimS .AppName)}}name: "user1",
+		Email:    "user1@email.com",
+		Password: "adsfi9he",
+	}
+
+	switch {
+	case field == "username":
+		invalid{{capitalize (trimS .AppName)}}.{{capitalize (trimS .AppName)}}name = "us"
+
+	case field == "email":
+		invalid{{capitalize (trimS .AppName)}}.Email = "asdf"
+
+	case field == "password":
+		invalid{{capitalize (trimS .AppName)}}.Password = "1234"
+	}
+
+	return invalid{{capitalize (trimS .AppName)}}
+}
+
+func Test{{capitalize .AppName}}Repository_CRUD(t *testing.T) {
+	t.Parallel()
+	t.Run("create user", func(t *testing.T) {})
+
+}
+
+func Test{{capitalize .AppName}}Repository_NonExistentRUD(t *testing.T) {
+}
+
+func Test{{capitalize .AppName}}Repository_ConstrainsValidation(t *testing.T) {
+}
+
+func Test{{capitalize .AppName}}Repository_HashingPassword(t *testing.T) {
+}
+
+func Test{{capitalize (trimS .AppName)}}Repository_ErrorHandling(t *testing.T) {
+}
+
+func Test{{capitalize .AppName}}Repository_SQLInjection(t *testing.T) {
+}
