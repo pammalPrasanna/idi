@@ -3,6 +3,7 @@ package domain
 import (
 	"regexp"
 	"strings"
+	"unicode/utf8"
 
 	"asdf/internal/lib"
 )
@@ -18,6 +19,8 @@ var emailRx = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zAZ0-9]
 func IsValidUsername(v *lib.Validator, username string) {
 	username = strings.TrimSpace(username)
 	v.Check("username", len(username) < 2, "username should be minimum 2 characters")
+	v.Check("username", utf8.RuneCountInString(username) > 64, "username should be maximum 64 characters")
+
 }
 
 func IsValidEmail(v *lib.Validator, email string) {
@@ -25,6 +28,6 @@ func IsValidEmail(v *lib.Validator, email string) {
 }
 
 func IsValidPassword(v *lib.Validator, password string) {
-	v.Check("password", len(password) < 8, "password should be minimum 8 characters")
-	v.Check("password", len(password) > 64, "password should be maximum 64 characters")
+	v.Check("password", utf8.RuneCountInString(password) < 8, "password should be minimum 8 characters")
+	v.Check("password", utf8.RuneCountInString(password) > 64, "password should be maximum 64 characters")
 }

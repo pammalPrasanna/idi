@@ -273,10 +273,73 @@ func TestUsersRepository_ConstrainsValidation(t *testing.T) {
 }
 
 func TestUsersRepository_HashingPassword(t *testing.T) {
-}
+	t.Parallel()
+	if !INTEGRATION_TESTS {
+		t.Errorf("skipping tests | INTEGRATION_TESTS = '%v'", INTEGRATION_TESTS)
+		t.FailNow()
+	}
 
-func TestUserRepository_ErrorHandling(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockLogger := NewMockILogger(ctrl)
+
+	repo := sqlite3.NewRepository(dbConn, mockLogger)
+
+	plainTextPassword := "securepassword"
+	password, err := rootApp.Hash(plainTextPassword)
+	assert.Nilf(t, err, "hashing failed, got err %v", err)
+
+	user := createValidUser(t)
+	user.Password = password
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+	defer cancel()
+	// create user
+	id, err := repo.CreateUser(ctx, user)
+	assert.Nilf(t, err, "create user failed, got err %v", err)
+
+	// get user
+	userFromRepo, err := repo.GetUser(ctx, &dtos.GetUserParams{
+		ID: id,
+	})
+	assert.Nilf(t, err, "want nil, got err %v", err)
+
+	ok, err := rootApp.CompareHashAndPassword(plainTextPassword, userFromRepo.HashedPassword)
+	assert.Nilf(t, err, "want nil, got err: %v", err)
+	assert.Equalf(t, true, ok, "password '%s' and hash '%s' doesn't match", password, userFromRepo.HashedPassword)
 }
 
 func TestUsersRepository_SQLInjection(t *testing.T) {
+	t.Parallel()
+	if !INTEGRATION_TESTS {
+		t.Errorf("skipping tests | INTEGRATION_TESTS = '%v'", INTEGRATION_TESTS)
+		t.FailNow()
+	}
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockLogger := NewMockILogger(ctrl)
+
+	repo := sqlite3.NewRepository(dbConn, mockLogger)
+	maliciousInput := "''; DROP TABLE users;"
+
+	user := createValidUser(t)
+	user.Email = maliciousInput
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+	defer cancel()
+	_, err := repo.CreateUser(ctx, user)
+	assert.Nilf(t, err, "want nil, got: '%v'", err)
+
+	// anticipating to delete the table with injected sql 
+	userByEmail, err := repo.GetUserByEmail(ctx, &dtos.GetUserParams{
+		Email: maliciousInput,
+	})
+	assert.Nilf(t, err, "want nil, got '%v', user: '%v'", userByEmail, err)
+
+	// trying to get data from the probably deleted table
+	userByEmail, err = repo.GetUserByEmail(ctx, &dtos.GetUserParams{
+		Email: maliciousInput,
+	}) 
+	assert.Nilf(t, err, "want nil, got '%v', user: '%v'", userByEmail, err)
 }

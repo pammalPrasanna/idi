@@ -17,6 +17,8 @@ CREATE TABLE IF NOT EXISTS users (
 	)
 );
 
+CREATE UNIQUE INDEX idx_users_email ON users(email);
+
 -- +goose StatementEnd
 -- +goose Down
 -- +goose StatementBegin

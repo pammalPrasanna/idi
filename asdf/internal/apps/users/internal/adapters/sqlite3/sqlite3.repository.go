@@ -31,6 +31,7 @@ SELECT
 	id,
 	username,
 	email,
+	hashed_password,
 	created_at,
 	updated_at
 FROM
@@ -51,6 +52,49 @@ func (t Sqlite3Repository) GetUser(ctx context.Context, arg *dtos.GetUserParams)
 		&user.ID,
 		&user.Username,
 		&user.Email,
+		&user.HashedPassword,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, lib.ErrNoRecord
+
+		default:
+			return nil, err
+		}
+	}
+	return user, nil
+}
+
+const getUserByEmailStmt = `
+SELECT
+	id,
+	username,
+	email,
+	hashed_password,
+	created_at,
+	updated_at
+FROM
+	users
+WHERE
+	email = ?
+LIMIT
+	1
+`
+
+func (t Sqlite3Repository) GetUserByEmail(ctx context.Context, arg *dtos.GetUserParams) (user *dtos.User, err error) {
+	if arg.Email == "" {
+		return nil, lib.ErrNoRecord
+	}
+	row := t.db.QueryRowContext(ctx, getUserByEmailStmt, arg.Email)
+	user = &dtos.User{}
+	err = row.Scan(
+		&user.ID,
+		&user.Username,
+		&user.Email,
+		&user.HashedPassword,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)

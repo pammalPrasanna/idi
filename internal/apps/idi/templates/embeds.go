@@ -33,13 +33,13 @@ var routeFile []byte
 //go:embed files/app/rest.dtos.go.tmpl
 var restDTOsFile []byte
 
-//go:embed files/app/gen.test.go.tmpl
+//go:embed files/app/tests/gen.test.go.tmpl
 var genTestFile []byte
 
-//go:embed files/app/repository.test.go.tmpl
+//go:embed files/app/tests/repository.test.go.tmpl
 var repoTestFile []byte
 
-//go:embed files/app/main.test.go.tmpl
+//go:embed files/app/tests/main.test.go.tmpl
 var mainTestFile []byte
 
 //go:embed files/app/users.sql.tmpl
