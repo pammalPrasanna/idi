@@ -1,33 +1,39 @@
-package {{.DBName}}
+package sqlite3
 
 import (
 	"context"
-	"errors"
 	"database/sql"
+	"errors"
+	"strings"
+	"time"
 
 	"{{.ProjectName}}/internal/apps/{{.AppName}}/internal/application/ports"
 	"{{.ProjectName}}/internal/dtos"
 	"{{.ProjectName}}/internal/lib"
 )
 
-type {{capitalize .DBName}}Repository struct {
-	db *sql.DB
+type Sqlite3Repository struct {
+	db     *sql.DB
 	logger lib.ILogger
 }
 
-var _ ports.I{{capitalize .AppName}}Repository = (*{{capitalize .DBName}}Repository)(nil)
+var _ ports.I{{capitalize .AppName}}Repository = (*Sqlite3Repository)(nil)
 
-func NewRepository(db *sql.DB, logger lib.ILogger) *{{capitalize .DBName}}Repository {
-	return &{{capitalize .DBName}}Repository{
+func NewRepository(db *sql.DB, logger lib.ILogger) *Sqlite3Repository {
+	return &Sqlite3Repository{
 		db,
 		logger,
 	}
 }
 
-
 const get{{capitalize (trimS .AppName)}}Stmt = `
 SELECT
-	id
+	id,
+	{{trimS .AppName}}name,
+	email,
+	hashed_password,
+	created_at,
+	updated_at
 FROM
 	{{.AppName}}
 WHERE
@@ -35,7 +41,8 @@ WHERE
 LIMIT
 	1
 `
-func (t {{capitalize .DBName}}Repository) Get{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Get{{capitalize (trimS .AppName)}}Params) ({{trimS .AppName}} *dtos.{{capitalize (trimS .AppName)}}, err error) {
+
+func (t *Sqlite3Repository) Get{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Get{{capitalize (trimS .AppName)}}Params) ({{trimS .AppName}} *dtos.{{capitalize (trimS .AppName)}}, err error) {
 	if arg.ID <= 0 {
 		return nil, lib.ErrNoRecord
 	}
@@ -43,6 +50,11 @@ func (t {{capitalize .DBName}}Repository) Get{{capitalize (trimS .AppName)}}(ctx
 	{{trimS .AppName}} = &dtos.{{capitalize (trimS .AppName)}}{}
 	err = row.Scan(
 		&{{trimS .AppName}}.ID,
+		&{{trimS .AppName}}.{{capitalize (trimS .AppName)}}name,
+		&{{trimS .AppName}}.Email,
+		&{{trimS .AppName}}.HashedPassword,
+		&{{trimS .AppName}}.CreatedAt,
+		&{{trimS .AppName}}.UpdatedAt,
 	)
 	if err != nil {
 		switch {
@@ -56,15 +68,60 @@ func (t {{capitalize .DBName}}Repository) Get{{capitalize (trimS .AppName)}}(ctx
 	return {{trimS .AppName}}, nil
 }
 
+const get{{capitalize (trimS .AppName)}}ByEmailStmt = `
+SELECT
+	id,
+	{{trimS .AppName}}name,
+	email,
+	hashed_password,
+	created_at,
+	updated_at
+FROM
+	{{.AppName}}
+WHERE
+	email = ?
+LIMIT
+	1
+`
 
+func (t *Sqlite3Repository) Get{{capitalize (trimS .AppName)}}ByEmail(ctx context.Context, arg *dtos.Get{{capitalize (trimS .AppName)}}Params) ({{trimS .AppName}} *dtos.{{capitalize (trimS .AppName)}}, err error) {
+	if arg.Email == "" {
+		return nil, lib.ErrNoRecord
+	}
+	row := t.db.QueryRowContext(ctx, get{{capitalize (trimS .AppName)}}ByEmailStmt, arg.Email)
+	{{trimS .AppName}} = &dtos.{{capitalize (trimS .AppName)}}{}
+	err = row.Scan(
+		&{{trimS .AppName}}.ID,
+		&{{trimS .AppName}}.{{capitalize (trimS .AppName)}}name,
+		&{{trimS .AppName}}.Email,
+		&{{trimS .AppName}}.HashedPassword,
+		&{{trimS .AppName}}.CreatedAt,
+		&{{trimS .AppName}}.UpdatedAt,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, lib.ErrNoRecord
+
+		default:
+			return nil, err
+		}
+	}
+	return {{trimS .AppName}}, nil
+}
 
 const list{{capitalize .AppName}}Stmt = `
 SELECT
-	id
+	id,
+	{{trimS .AppName}}name,
+	email,
+	created_at,
+	updated_at
 FROM
 	{{.AppName}}
 `
-func (t {{capitalize .DBName}}Repository) Find{{capitalize .AppName}}(ctx context.Context, arg *dtos.Find{{capitalize .AppName}}Params) ({{.AppName}} []*dtos.{{capitalize (trimS .AppName)}}, err error) {
+
+func (t *Sqlite3Repository) Find{{capitalize .AppName}}(ctx context.Context, arg *dtos.Find{{capitalize .AppName}}Params) ({{.AppName}} []*dtos.{{capitalize (trimS .AppName)}}, err error) {
 	rows, err := t.db.QueryContext(ctx, list{{capitalize .AppName}}Stmt)
 	if err != nil {
 		t.logger.Error("unable to query rows", "Find{{capitalize .AppName}}", err)
@@ -72,52 +129,72 @@ func (t {{capitalize .DBName}}Repository) Find{{capitalize .AppName}}(ctx contex
 	}
 	defer func() {
 		rowsErr := rows.Close()
-		t.logger.Error("unable to close rows", "Find{{capitalize .AppName}}", rowsErr)
-		err = errors.Join(err, rowsErr)
+		if rowsErr != nil {
+
+			t.logger.Error("unable to close rows", "Find{{capitalize .AppName}}", rowsErr)
+			err = errors.Join(err, rowsErr)
+		}
 	}()
-	items := []*dtos.{{capitalize (trimS .AppName)}}{}
+
+	{{.AppName}} = []*dtos.{{capitalize (trimS .AppName)}}{}
 	for rows.Next() {
-		i := &dtos.{{capitalize (trimS .AppName)}}{}
+		{{trimS .AppName}} := &dtos.{{capitalize (trimS .AppName)}}{}
 		if rowErr := rows.Scan(
-			&i.ID,
+			&{{trimS .AppName}}.ID,
+			&{{trimS .AppName}}.{{capitalize (trimS .AppName)}}name,
+			&{{trimS .AppName}}.Email,
+			&{{trimS .AppName}}.CreatedAt,
+			&{{trimS .AppName}}.UpdatedAt,
 		); rowErr != nil {
 			t.logger.Error("rows Scan() got errors", "Find{{.AppName}}", rowErr)
 			err = errors.Join(err, rowErr)
 			return nil, err
 		}
-		items = append(items, i)
+		{{.AppName}} = append({{.AppName}}, {{trimS .AppName}})
 	}
-	return items, err
+	return {{.AppName}}, err
 }
 
 const create{{capitalize (trimS .AppName)}}Stmt = `INSERT INTO
-	{{.AppName}} (task, description)
+	{{.AppName}} ({{trimS .AppName}}name, email, hashed_password)
 VALUES
-	(?, ?) RETURNING id`
-func (t {{capitalize .DBName}}Repository) Create{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Create{{capitalize (trimS .AppName)}}Params) (id int64, err error) {
-	row := t.db.QueryRowContext(ctx, create{{capitalize (trimS .AppName)}}Stmt, arg.Task, arg.Description)
+	(?, ?, ?) RETURNING id`
+
+func (t *Sqlite3Repository) Create{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Create{{capitalize (trimS .AppName)}}Params) (id int64, err error) {
+	row := t.db.QueryRowContext(ctx, create{{capitalize (trimS .AppName)}}Stmt, arg.{{capitalize (trimS .AppName)}}name, arg.Email, arg.Password)
 	err = row.Scan(&id)
+	if err != nil {
+		switch {
+		case strings.Contains(err.Error(), "UNIQUE"):
+			return -1, lib.ErrNotUnique{
+				Msg: err.Error(),
+			}
+
+		default:
+			return -1, err
+		}
+	}
 	return id, err
 }
-
 
 const update{{capitalize (trimS .AppName)}}Stmt = `
 UPDATE
 	{{.AppName}}
 set
-	task = ?,
-	description = ?
+	{{trimS .AppName}}name = ?,
+	email = ?,
+	updated_at = ?
 WHERE
 	id = ?
 `
-func (t {{capitalize .DBName}}Repository) Update{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Update{{capitalize (trimS .AppName)}}Params) error {
+
+func (t *Sqlite3Repository) Update{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Update{{capitalize (trimS .AppName)}}Params) error {
 	if arg.ID <= 0 {
 		return lib.ErrNoRecord
 	}
-	_, err := t.db.ExecContext(ctx, update{{capitalize (trimS .AppName)}}Stmt, arg.Task, arg.Description, arg.ID)
-	return err 	
+	_, err := t.db.ExecContext(ctx, update{{capitalize (trimS .AppName)}}Stmt, *arg.{{capitalize (trimS .AppName)}}name, *arg.Email, lib.ITime(time.Now()).Time(), arg.ID)
+	return err
 }
-
 
 const delete{{capitalize (trimS .AppName)}}Stmt = `
 DELETE FROM
@@ -125,7 +202,8 @@ DELETE FROM
 WHERE
 	id = ?
 `
-func (t {{capitalize .DBName}}Repository) Delete{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Delete{{capitalize (trimS .AppName)}}Params) error {
+
+func (t *Sqlite3Repository) Delete{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Delete{{capitalize (trimS .AppName)}}Params) error {
 	if arg.ID <= 0 {
 		return lib.ErrNoRecord
 	}

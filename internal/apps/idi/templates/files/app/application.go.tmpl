@@ -54,19 +54,52 @@ func (t *{{ capitalize .AppName }}) Find{{ capitalize .AppName }}(ctx context.Co
 }
 
 func (t *{{ capitalize .AppName }}) Create{{ capitalize (trimS .AppName) }}(ctx context.Context, arg *dtos.Create{{ capitalize (trimS .AppName) }}Params) (id int64, err error) {
-	_, err = domain.New{{capitalize (trimS .AppName)}}(arg.Task, arg.Description, arg.DueDate)
-	if err != nil {
-		return 0, err
+	v := lib.NewValidator()
+	domain.IsValidUsername(v, arg.Username)
+	{{if eq .AppName "users"}}
+	domain.IsValidEmail(v, arg.Email)
+	domain.IsValidPassword(v, arg.Password)
+	{{end}}
+
+	if !v.Valid() {
+		return -1, v.Errors()
 	}
-	return t.Repo.Create{{capitalize (trimS .AppName)}}(ctx, arg)
+
+	{{if eq .AppName "users"}}
+	arg.Password, _ = t.RootApp.Hash(arg.Password)
+	{{end}}
+
+	return t.Repo.CreateUser(ctx, arg)
 }
 
 func (t *{{ capitalize .AppName }}) Update{{ capitalize (trimS .AppName) }}(ctx context.Context, arg *dtos.Update{{ capitalize (trimS .AppName) }}Params) error {
-	_, err := domain.New{{ capitalize (trimS .AppName) }}(arg.Task, arg.Description, arg.DueDate)
+	v := lib.NewValidator()
+	if arg.Username != nil {
+		domain.IsValidUsername(v, *arg.Username)
+	}
+	{{if eq .AppName "users"}}
+	if arg.Email != nil {
+		domain.IsValidEmail(v, *arg.Email)
+	}
+	{{end}}
+	if !v.Valid() {
+		return v.Errors()
+	}
+
+	user, err := t.Repo.Get{{capitalize (trimS .AppName)}}(ctx, &dtos.Get{{capitalize (trimS .AppName)}}Params{ID: arg.ID})
 	if err != nil {
 		return err
 	}
-	return t.Repo.Update{{ capitalize (trimS .AppName) }}(ctx, arg)
+
+	if arg.Username == nil {
+		arg.Username = &user.Username
+	}
+	{{if eq .AppName "users"}}
+	if arg.Email == nil {
+		arg.Email = &user.Email
+	}
+	{{end}}
+	return t.Repo.Update{{capitalize (trimS .AppName)}}(ctx, arg)
 }
 
 func (t *{{ capitalize .AppName }}) Delete{{ capitalize (trimS .AppName) }}(ctx context.Context, arg *dtos.Delete{{ capitalize (trimS .AppName) }}Params) error {

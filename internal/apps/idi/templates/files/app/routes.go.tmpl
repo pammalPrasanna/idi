@@ -13,8 +13,8 @@ func RegisterRoutes(rootApp lib.IApp, app *application.{{ capitalize .AppName }}
 	mux := ctrlr.Mux()
 
 	mux.HandlerFunc(http.MethodGet, "/{{.AppName}}", ctrlr.Find{{capitalize .AppName}}H)
-	mux.HandlerFunc(http.MethodGet, "/{{.AppName}}/:id", ctrlr.Get{{capitalize .AppName}}H)
-	mux.HandlerFunc(http.MethodPost, "/{{.AppName}}", ctrlr.Create{{capitalize .AppName}}H)
-	mux.HandlerFunc(http.MethodPut, "/{{.AppName}}", ctrlr.Update{{capitalize .AppName}}H)
-	mux.HandlerFunc(http.MethodDelete, "/{{.AppName}}", ctrlr.Delete{{capitalize .AppName}}H)
+	mux.HandlerFunc(http.MethodGet, "/{{.AppName}}/:id", ctrlr.Get{{capitalize (trimS .AppName)}}H)
+	mux.HandlerFunc(http.MethodPost, "/{{.AppName}}", ctrlr.Create{{capitalize (trimS .AppName)}}H)
+	mux.HandlerFunc(http.MethodPatch, "/{{.AppName}}", ctrlr.Patch{{capitalize (trimS .AppName)}}H)
+	mux.HandlerFunc(http.MethodDelete, "/{{.AppName}}", ctrlr.Delete{{capitalize (trimS .AppName)}}H)
 }

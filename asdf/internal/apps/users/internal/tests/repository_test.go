@@ -34,10 +34,10 @@ func TestUsersRepository_CRUD(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockLogger := NewMockILogger(ctrl)
 	t.Run("-- create user with valid data", func(t *testing.T) {
+		t.Parallel()
+		mockLogger := NewMockILogger(ctrl)
 		repo := sqlite3.NewRepository(dbConn, mockLogger)
-
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
 		defer cancel()
 
@@ -48,7 +48,23 @@ func TestUsersRepository_CRUD(t *testing.T) {
 		assert.Nilf(t, err, "want nil, got %v", err)
 	})
 
+	t.Run("-- find all users", func(t *testing.T) {
+		t.Parallel()
+		mockLogger := NewMockILogger(ctrl)
+		repo := sqlite3.NewRepository(dbConn, mockLogger)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+		defer cancel()
+
+		// create user
+		users, err := repo.FindUsers(ctx, &dtos.FindUsersParams{})
+
+		assert.NotNil(t, users, "want data, got nil")
+		assert.Nilf(t, err, "want nil, got %v", err)
+	})
+
 	t.Run("-- get user with valid id", func(t *testing.T) {
+		t.Parallel()
+		mockLogger := NewMockILogger(ctrl)
 		repo := sqlite3.NewRepository(dbConn, mockLogger)
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
@@ -72,6 +88,8 @@ func TestUsersRepository_CRUD(t *testing.T) {
 	})
 
 	t.Run("-- update user with valid id", func(t *testing.T) {
+		t.Parallel()
+		mockLogger := NewMockILogger(ctrl)
 		repo := sqlite3.NewRepository(dbConn, mockLogger)
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
@@ -87,8 +105,8 @@ func TestUsersRepository_CRUD(t *testing.T) {
 
 		updatedUser := &dtos.UpdateUserParams{
 			ID:       id,
-			Username: "updated_username",
-			Email:    "updated@email.com",
+			Username: addrOfStr(randomUsername()),
+			Email:    addrOfStr(randomEmail()),
 		}
 
 		// update user
@@ -101,11 +119,13 @@ func TestUsersRepository_CRUD(t *testing.T) {
 		})
 		assert.Nilf(t, err, "want nil, got %v", err)
 
-		assert.Equalf(t, updatedUser.Email, gotUser.Email, "want '%s', got '%s'", updatedUser.Email, gotUser.Email)
-		assert.Equalf(t, updatedUser.Username, gotUser.Username, "want '%s', got '%s'", updatedUser.Email, gotUser.Email)
+		assert.Equalf(t, *updatedUser.Email, gotUser.Email, "want '%s', got '%s'", *updatedUser.Email, gotUser.Email)
+		assert.Equalf(t, *updatedUser.Username, gotUser.Username, "want '%s', got '%s'", *updatedUser.Email, gotUser.Email)
 	})
 
 	t.Run("-- delete user with valid id", func(t *testing.T) {
+		t.Parallel()
+		mockLogger := NewMockILogger(ctrl)
 		repo := sqlite3.NewRepository(dbConn, mockLogger)
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
@@ -143,9 +163,11 @@ func TestUsersRepository_NonExistentID(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockLogger := NewMockILogger(ctrl)
+	// mockLogger := NewMockILogger(ctrl)
 
 	t.Run("-- read user with invalid id", func(t *testing.T) {
+		t.Parallel()
+		mockLogger := NewMockILogger(ctrl)
 		repo := sqlite3.NewRepository(dbConn, mockLogger)
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
@@ -159,21 +181,23 @@ func TestUsersRepository_NonExistentID(t *testing.T) {
 		assert.ErrorIs(t, lib.ErrNoRecord, err)
 	})
 	t.Run("-- update user with invalid id", func(t *testing.T) {
+		t.Parallel()
+		mockLogger := NewMockILogger(ctrl)
 		repo := sqlite3.NewRepository(dbConn, mockLogger)
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
 		defer cancel()
 
 		err := repo.UpdateUser(ctx, &dtos.UpdateUserParams{
-			ID:       -1,
-			Username: "user1",
-			Email:    "user1@email.com",
+			ID: -1,
 		})
 
 		assert.NotNil(t, err)
 		assert.ErrorIs(t, lib.ErrNoRecord, err)
 	})
 	t.Run("-- delete user with invalid id", func(t *testing.T) {
+		t.Parallel()
+		mockLogger := NewMockILogger(ctrl)
 		repo := sqlite3.NewRepository(dbConn, mockLogger)
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
@@ -197,9 +221,10 @@ func TestUsersRepository_ConstrainsValidation(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockLogger := NewMockILogger(ctrl)
 
 	t.Run("-- unique email", func(t *testing.T) {
+		t.Parallel()
+		mockLogger := NewMockILogger(ctrl)
 		repo := sqlite3.NewRepository(dbConn, mockLogger)
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
@@ -215,6 +240,8 @@ func TestUsersRepository_ConstrainsValidation(t *testing.T) {
 	})
 
 	t.Run("-- unique username", func(t *testing.T) {
+		t.Parallel()
+		mockLogger := NewMockILogger(ctrl)
 		repo := sqlite3.NewRepository(dbConn, mockLogger)
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
@@ -232,6 +259,8 @@ func TestUsersRepository_ConstrainsValidation(t *testing.T) {
 	})
 
 	t.Run("-- empty username", func(t *testing.T) {
+		t.Parallel()
+		mockLogger := NewMockILogger(ctrl)
 		repo := sqlite3.NewRepository(dbConn, mockLogger)
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
@@ -245,6 +274,8 @@ func TestUsersRepository_ConstrainsValidation(t *testing.T) {
 		assert.NotNilf(t, err, "want CHECK constraint failed, got: '%v'", err)
 	})
 	t.Run("-- empty email", func(t *testing.T) {
+		t.Parallel()
+		mockLogger := NewMockILogger(ctrl)
 		repo := sqlite3.NewRepository(dbConn, mockLogger)
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
@@ -258,6 +289,8 @@ func TestUsersRepository_ConstrainsValidation(t *testing.T) {
 		assert.NotNilf(t, err, "want CHECK constraint failed, got: '%v'", err)
 	})
 	t.Run("-- empty password", func(t *testing.T) {
+		t.Parallel()
+		mockLogger := NewMockILogger(ctrl)
 		repo := sqlite3.NewRepository(dbConn, mockLogger)
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
@@ -321,7 +354,7 @@ func TestUsersRepository_SQLInjection(t *testing.T) {
 	mockLogger := NewMockILogger(ctrl)
 
 	repo := sqlite3.NewRepository(dbConn, mockLogger)
-	maliciousInput := "''; DROP TABLE users;"
+	maliciousInput := randomEmail() + "; DROP TABLE users;"
 
 	user := createValidUser(t)
 	user.Email = maliciousInput
@@ -331,7 +364,7 @@ func TestUsersRepository_SQLInjection(t *testing.T) {
 	_, err := repo.CreateUser(ctx, user)
 	assert.Nilf(t, err, "want nil, got: '%v'", err)
 
-	// anticipating to delete the table with injected sql 
+	// anticipating to delete the table with injected sql
 	userByEmail, err := repo.GetUserByEmail(ctx, &dtos.GetUserParams{
 		Email: maliciousInput,
 	})
@@ -340,6 +373,6 @@ func TestUsersRepository_SQLInjection(t *testing.T) {
 	// trying to get data from the probably deleted table
 	userByEmail, err = repo.GetUserByEmail(ctx, &dtos.GetUserParams{
 		Email: maliciousInput,
-	}) 
+	})
 	assert.Nilf(t, err, "want nil, got '%v', user: '%v'", userByEmail, err)
 }

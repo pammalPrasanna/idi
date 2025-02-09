@@ -9,10 +9,10 @@ generate:
 	go fmt .{{pathSep}}...
 
 testv:
-	go run .{{pathSep}}... -count=1 -race --shuffle "on" -v -codecoverage
+	go test .{{pathSep}}... -count=1 -race --shuffle on -v 
 
 testdox:
-	gotestdox .{{pathSep}}... -count=1 -race --shuffle "on" -v -codecoverage
+	gotestdox .{{pathSep}}... -count=1 -race --shuffle on -v 
 
 createsql:
 	goose -s -dir .{{pathSep}}migrations create ${t} sql

@@ -14,16 +14,18 @@ type User struct {
 	Password string
 }
 
-var emailRx = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zAZ0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+var emailRx = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
 func IsValidUsername(v *lib.Validator, username string) {
 	username = strings.TrimSpace(username)
-	v.Check("username", len(username) < 2, "username should be minimum 2 characters")
+	v.Check("username", utf8.RuneCountInString(username) < 2, "username should be minimum 2 characters")
 	v.Check("username", utf8.RuneCountInString(username) > 64, "username should be maximum 64 characters")
-
 }
 
 func IsValidEmail(v *lib.Validator, email string) {
+	if emailRx == nil {
+		emailRx = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+	}
 	v.Check("email", !emailRx.MatchString(email), "invalid email")
 }
 

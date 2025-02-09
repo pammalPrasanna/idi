@@ -14,6 +14,6 @@ func RegisterRoutes(rootApp lib.IApp, app *application.Users) {
 	mux.HandlerFunc(http.MethodGet, "/users", ctrlr.FindUsersH)
 	mux.HandlerFunc(http.MethodGet, "/users/:id", ctrlr.GetUsersH)
 	mux.HandlerFunc(http.MethodPost, "/users", ctrlr.CreateUsersH)
-	mux.HandlerFunc(http.MethodPut, "/users", ctrlr.UpdateUsersH)
+	mux.HandlerFunc(http.MethodPatch, "/users", ctrlr.PatchUserH)
 	mux.HandlerFunc(http.MethodDelete, "/users", ctrlr.DeleteUsersH)
 }

@@ -153,7 +153,7 @@ var appDBFiles = map[string]*itemplate{
 	},
 	"users.sql": {
 		path: "migrations/00001_create_users_table.sql",
-		content: usersSQLFile,
+		content: usersMigrationFile,
 	},
 }
 
@@ -190,6 +190,8 @@ var appDefaultFiles = map[string]*itemplate{
 		path:    "internal/apps/{app_name}/internal/adapters/{router_name}/rest.dtos.go",
 		content: restDTOsFile,
 	},
+
+	// 
 	"generate_test.go": {
 		path:    "internal/apps/{app_name}/internal/tests/generate_test.go",
 		content: genTestFile,
@@ -201,6 +203,26 @@ var appDefaultFiles = map[string]*itemplate{
 	"main_test.go": {
 		path:    "internal/apps/{app_name}/internal/tests/main_test.go",
 		content: mainTestFile,
+	},
+	"application_test.go": {
+		path:    "internal/apps/{app_name}/internal/tests/application_test.go",
+		content: applicationTestFile,
+	},
+	"controller_test.go": {
+		path:    "internal/apps/{app_name}/internal/tests/controller_test.go",
+		content: controllerTestFile,
+	},
+	"random_test.go": {
+		path:    "internal/apps/{app_name}/internal/tests/random_test.go",
+		content: randomTestFile,
+	},
+	"schema_test.go": {
+		path:    "internal/apps/{app_name}/internal/tests/schema_test.go",
+		content: schemaTestFile,
+	},
+	"testdb_test.go": {
+		path:    "internal/apps/{app_name}/internal/tests/testdb_test.go",
+		content: testDBTestFile,
 	},
 }
 

@@ -24,12 +24,15 @@ func setupTestDB(m *testing.M) (int, error) {
 		INTEGRATION_TESTS = false
 		fmt.Println("skipping database setup")
 		return m.Run(), nil
+	} else {
+		INTEGRATION_TESTS = true
 	}
-
-	INTEGRATION_TESTS = true
 
 	var err error
 
+	if err := os.Remove(dbfile); err != nil {
+		log.Printf("unable to delete testdb with error: %s", err)
+	}
 	conn, err := Sqlite3Test()
 	if err != nil {
 		return -1, err

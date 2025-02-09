@@ -12,10 +12,10 @@ import (
 
 type UsersController struct {
 	lib.IApp
-	app *application.Users
+	app application.IUsers
 }
 
-func NewUsersController(rootApp lib.IApp, app *application.Users) *UsersController {
+func NewUsersController(rootApp lib.IApp, app application.IUsers) *UsersController {
 	return &UsersController{
 		rootApp,
 		app,
@@ -45,7 +45,7 @@ func (tc *UsersController) CreateUsersH(w http.ResponseWriter, r *http.Request) 
 
 	args := &dtos.CreateUserParams{}
 	if err := tc.DecodeJSON(w, r, args); err != nil {
-		tc.BadRequest(w, r, err)
+		tc.handleError(w, r, err)
 		return
 	}
 
@@ -55,7 +55,7 @@ func (tc *UsersController) CreateUsersH(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	tc.JSON(w, http.StatusOK, &CreateUserResponse{
+	tc.JSON(w, http.StatusCreated, &CreateUserResponse{
 		UserID: id,
 	})
 }
@@ -66,7 +66,7 @@ func (tc *UsersController) GetUsersH(w http.ResponseWriter, r *http.Request) {
 
 	id, err := tc.ParseIntFromRequest("id", r)
 	if err != nil {
-		tc.BadRequest(w, r, err)
+		tc.handleError(w, r, err)
 		return
 	}
 
@@ -83,19 +83,19 @@ func (tc *UsersController) GetUsersH(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (tc *UsersController) UpdateUsersH(w http.ResponseWriter, r *http.Request) {
+func (tc *UsersController) PatchUserH(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), tc.ContextTime())
 	defer cancel()
 
 	id, err := tc.ParseIntFromRequest("id", r)
 	if err != nil {
-		tc.BadRequest(w, r, err)
+		tc.handleError(w, r, err)
 		return
 	}
 
 	args := &dtos.UpdateUserParams{}
 	if err := tc.DecodeJSON(w, r, args); err != nil {
-		tc.BadRequest(w, r, err)
+		tc.handleError(w, r, err)
 		return
 	}
 	args.ID = id
@@ -107,7 +107,7 @@ func (tc *UsersController) UpdateUsersH(w http.ResponseWriter, r *http.Request) 
 	}
 
 	tc.JSON(w, http.StatusOK, &dtos.HTTPMsg{
-		Message: "updated successfully",
+		Message: "patched successfully",
 	})
 }
 
@@ -117,7 +117,7 @@ func (tc *UsersController) DeleteUsersH(w http.ResponseWriter, r *http.Request) 
 
 	id, err := tc.ParseIntFromRequest("id", r)
 	if err != nil {
-		tc.BadRequest(w, r, err)
+		tc.handleError(w, r, err)
 		return
 	}
 
@@ -136,17 +136,22 @@ func (tc *UsersController) DeleteUsersH(w http.ResponseWriter, r *http.Request) 
 
 func (tc *UsersController) handleError(w http.ResponseWriter, r *http.Request, err error) {
 	switch {
+	case errors.Is(err, lib.ErrInvalidParameterID):
+		tc.UnprocessableEntity(w, r, &dtos.HTTPErrMsg{
+			Error: err.Error(),
+		})
+	case errors.As(err, &lib.ErrInvalidJSON{}):
+		tc.BadRequest(w, r, &dtos.HTTPErrMsg{
+			Error: err.Error(),
+		})
 	case errors.As(err, &lib.ErrInvalidData{}):
 		e := err.(lib.ErrInvalidData)
 		tc.UnprocessableEntity(w, r, &dtos.HTTPErrs{
 			Errors: e.GetErrors(),
 		})
-		return
 	case errors.Is(err, lib.ErrNoRecord):
 		tc.NotFound(w, r)
-		return
 	default:
 		tc.ServerError(w, r, err)
-		return
 	}
 }

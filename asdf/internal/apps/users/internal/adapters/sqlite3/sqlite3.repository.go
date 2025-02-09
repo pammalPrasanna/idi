@@ -119,8 +119,6 @@ SELECT
 	updated_at
 FROM
 	users
-WHERE
-	id = ?
 `
 
 func (t Sqlite3Repository) FindUsers(ctx context.Context, arg *dtos.FindUsersParams) (users []*dtos.User, err error) {
@@ -131,8 +129,11 @@ func (t Sqlite3Repository) FindUsers(ctx context.Context, arg *dtos.FindUsersPar
 	}
 	defer func() {
 		rowsErr := rows.Close()
-		t.logger.Error("unable to close rows", "FindUsers", rowsErr)
-		err = errors.Join(err, rowsErr)
+		if rowsErr != nil {
+
+			t.logger.Error("unable to close rows", "FindUsers", rowsErr)
+			err = errors.Join(err, rowsErr)
+		}
 	}()
 
 	users = []*dtos.User{}
@@ -191,7 +192,7 @@ func (t Sqlite3Repository) UpdateUser(ctx context.Context, arg *dtos.UpdateUserP
 	if arg.ID <= 0 {
 		return lib.ErrNoRecord
 	}
-	_, err := t.db.ExecContext(ctx, updateUserStmt, arg.Username, arg.Email, lib.ITime(time.Now()).Time(), arg.ID)
+	_, err := t.db.ExecContext(ctx, updateUserStmt, *arg.Username, *arg.Email, lib.ITime(time.Now()).Time(), arg.ID)
 	return err
 }
 

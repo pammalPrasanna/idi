@@ -3,14 +3,15 @@ package users_test
 //go:generate mockgen -source .\generate_test.go -destination .\mocks_test.go  -package users_test
 
 import (
-	"asdf/internal/dtos"
-	"asdf/internal/lib"
-	"asdf/internal/lib/auth"
 	"context"
 	"database/sql"
 	"log/slog"
 	"net/http"
 	"time"
+
+	"asdf/internal/dtos"
+	"asdf/internal/lib"
+	"asdf/internal/lib/auth"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -78,3 +79,5 @@ type (
 		Handler() slog.Handler
 	}
 )
+
+func addrOfStr(s string) *string { return &s }

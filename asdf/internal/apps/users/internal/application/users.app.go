@@ -59,14 +59,28 @@ func (t *Users) CreateUser(ctx context.Context, arg *dtos.CreateUserParams) (id 
 
 func (t *Users) UpdateUser(ctx context.Context, arg *dtos.UpdateUserParams) error {
 	v := lib.NewValidator()
-	domain.IsValidUsername(v, arg.Username)
-	domain.IsValidEmail(v, arg.Email)
-
-	if v.Valid() {
-		return t.Repo.UpdateUser(ctx, arg)
+	if arg.Username != nil {
+		domain.IsValidUsername(v, *arg.Username)
+	}
+	if arg.Email != nil {
+		domain.IsValidEmail(v, *arg.Email)
+	}
+	if !v.Valid() {
+		return v.Errors()
 	}
 
-	return v.Errors()
+	user, err := t.Repo.GetUser(ctx, &dtos.GetUserParams{ID: arg.ID})
+	if err != nil {
+		return err
+	}
+
+	if arg.Username == nil {
+		arg.Username = &user.Username
+	}
+	if arg.Email == nil {
+		arg.Email = &user.Email
+	}
+	return t.Repo.UpdateUser(ctx, arg)
 }
 
 func (t *Users) DeleteUser(ctx context.Context, arg *dtos.DeleteUserParams) error {

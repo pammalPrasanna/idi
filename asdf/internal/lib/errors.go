@@ -5,24 +5,33 @@ import (
 	"strings"
 )
 
-var ErrNoRecord = errors.New("no record found")
+var (
+	ErrNoRecord           = errors.New("no record found")
+	ErrInvalidParameterID = errors.New("invalid parameter: id")
+)
 
-type ErrInvalidData map[string][]string
+type (
+	ErrInvalidData map[string][]string
+	ErrNotUnique   struct {
+		Msg   string
+		field string
+	}
+	ErrInvalidJSON struct {
+		Msg string
+	}
+)
 
 var _ error = (*ErrInvalidData)(nil)
 
 func (e ErrInvalidData) Error() string {
-	return "Invalid data"
+	return "invalid data"
 }
 
 func (e ErrInvalidData) GetErrors() map[string][]string {
 	return e
 }
 
-type ErrNotUnique struct {
-	Msg   string
-	field string
-}
+var _ error = (*ErrNotUnique)(nil)
 
 func (e ErrNotUnique) Error() string {
 	if e.field == "" {
@@ -32,4 +41,8 @@ func (e ErrNotUnique) Error() string {
 	return e.field + " already exists"
 }
 
-var _ error = (*ErrNotUnique)(nil)
+var _ error = (*ErrInvalidJSON)(nil)
+
+func (e ErrInvalidJSON) Error() string {
+	return e.Msg
+}

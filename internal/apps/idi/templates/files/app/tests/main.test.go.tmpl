@@ -13,67 +13,59 @@ import (
 	"github.com/joho/godotenv"
 )
 
-const dbfile string = "testdb.db"
-
 var (
-	dbConn  *sql.DB
-	rootApp lib.IApp
+	dbConn            *sql.DB
+	rootApp           lib.IApp
+	INTEGRATION_TESTS bool
 )
 
 func setupTestDB(m *testing.M) (int, error) {
-	{{if eq .DBName "sqlite3"}}
-	if os.Getenv("INTEGRATION_TEST") != "true" {
+	if os.Getenv("INTEGRATION_TESTS") != "true" {
+		INTEGRATION_TESTS = false
 		fmt.Println("skipping database setup")
 		return m.Run(), nil
+	} else {
+		INTEGRATION_TESTS = true
 	}
 
 	var err error
 
-	f, err := os.Create(dbfile)
+	if err := os.Remove(dbfile); err != nil {
+		log.Printf("unable to delete testdb with error: %s", err)
+	}
+	conn, err := Sqlite3Test()
 	if err != nil {
 		return -1, err
 	}
 
 	cmd := exec.Command("goose",
-		"-s", "-dir=../../../../../migrations", "sqlite3", dbfile, "up",
+		"-s", "-dir=../../../../../migrations", "sqlite3", "testdb.db", "up",
 	)
 
 	if err := cmd.Run(); err != nil {
-		log.Fatal(err)
-	}
-
-	conn, err := sql.Open("sqlite3", f.Name())
-	if err != nil {
-		return -1, err
+		log.Printf("unable to run migrations with error: %s", err)
 	}
 
 	dbConn = conn
 
 	defer func() {
-		if ferr := f.Close(); ferr != nil {
-			if err == nil {
-				err = ferr
-			}
-			log.Fatalf("unable to close testdb file with error: %s", ferr)
-		}
 		if err := dbConn.Close(); err != nil {
-			log.Fatalf("unable to close DB with error: '%s'", err)
+			log.Printf("unable to close DB with error: '%s'", err)
 		}
-		if err := os.RemoveAll(dbfile); err != nil {
-			log.Fatalf("unable to delete testdb with error: %s", err)
+		if err := os.Remove(dbfile); err != nil {
+			log.Printf("unable to delete testdb with error: %s", err)
 		}
 	}()
-	{{end}}
 
 	return m.Run(), nil
 }
 
 func TestMain(m *testing.M) {
 	godotenv.Load("../../../../../.env")
-	ra, err := lib.{{capitalize .Alias}}()
+	ra, err := lib.Idi()
 	if err != nil {
 		log.Printf("unable to create root app: %s", err)
-        os.Exit(-1)
+		os.Exit(-1)
 	}
 	rootApp = ra
 	code, err := setupTestDB(m)

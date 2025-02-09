@@ -1,13 +1,15 @@
 package dtos
 
+import "time"
+
 type (
 	User struct {
-		ID             int64  `json:"id"`
-		Username       string `json:"task"`
-		Email          string `json:"description"`
-		HashedPassword string `json:"-"`
-		CreatedAt      string `json:"created_at"`
-		UpdatedAt      string `json:"updated_at"`
+		ID             int64     `json:"id"`
+		Username       string    `json:"username"`
+		Email          string    `json:"email"`
+		HashedPassword string    `json:"-"`
+		CreatedAt      time.Time `json:"created_at"`
+		UpdatedAt      time.Time `json:"updated_at"`
 	}
 	GetUserParams struct {
 		ID    int64
@@ -20,9 +22,9 @@ type (
 		Password string `json:"password"`
 	}
 	UpdateUserParams struct {
+		Username *string `json:"task"`
+		Email    *string `json:"description"`
 		ID       int64  `json:"id"`
-		Username string `json:"task"`
-		Email    string `json:"description"`
 	}
 	DeleteUserParams struct {
 		ID int64

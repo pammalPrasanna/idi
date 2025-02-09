@@ -1,69 +1,378 @@
 package {{.AppName}}_test
 
 import (
+	"context"
 	"testing"
+	"time"
 
+	"{{.ProjectName}}/internal/apps/{{.AppName}}/internal/adapters/sqlite3"
 	"{{.ProjectName}}/internal/dtos"
-)
+	"{{.ProjectName}}/internal/lib"
 
-var valid{{capitalize (trimS .AppName)}} *dtos.Create{{capitalize (trimS .AppName)}}Params
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+)
 
 func createValid{{capitalize (trimS .AppName)}}(t *testing.T) *dtos.Create{{capitalize (trimS .AppName)}}Params {
 	t.Helper()
 
-	if valid{{capitalize (trimS .AppName)}} != nil {
-		return valid{{capitalize (trimS .AppName)}}
+	return &dtos.Create{{capitalize (trimS .AppName)}}Params{
+		Username: randomUsername(),
+		Email:    randomEmail(),
+		Password: randString(8),
 	}
-
-	valid{{capitalize (trimS .AppName)}} = &dtos.Create{{capitalize (trimS .AppName)}}Params{
-		{{capitalize (trimS .AppName)}}name: "user1",
-		Email:    "user1@email.com",
-		Password: "adsfi9he",
-	}
-
-	return valid{{capitalize (trimS .AppName)}}
-}
-
-func createInvalid{{capitalize (trimS .AppName)}}(t *testing.T, field string) *dtos.Create{{capitalize (trimS .AppName)}}Params {
-	t.Helper()
-
-	invalid{{capitalize (trimS .AppName)}} := &dtos.Create{{capitalize (trimS .AppName)}}Params{
-		{{capitalize (trimS .AppName)}}name: "user1",
-		Email:    "user1@email.com",
-		Password: "adsfi9he",
-	}
-
-	switch {
-	case field == "username":
-		invalid{{capitalize (trimS .AppName)}}.{{capitalize (trimS .AppName)}}name = "us"
-
-	case field == "email":
-		invalid{{capitalize (trimS .AppName)}}.Email = "asdf"
-
-	case field == "password":
-		invalid{{capitalize (trimS .AppName)}}.Password = "1234"
-	}
-
-	return invalid{{capitalize (trimS .AppName)}}
 }
 
 func Test{{capitalize .AppName}}Repository_CRUD(t *testing.T) {
 	t.Parallel()
-	t.Run("create user", func(t *testing.T) {})
+	if !INTEGRATION_TESTS {
+		t.Errorf("skipping tests | INTEGRATION_TESTS = '%v'", INTEGRATION_TESTS)
+		t.FailNow()
+	}
+	assert.NotNil(t, dbConn, "db connection is nil")
 
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	t.Run("-- create user with valid data", func(t *testing.T) {
+		t.Parallel()
+		mockLogger := NewMockILogger(ctrl)
+		repo := sqlite3.NewRepository(dbConn, mockLogger)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+		defer cancel()
+
+		// create user
+		id, err := repo.Create{{capitalize (trimS .AppName)}}(ctx, createValid{{capitalize (trimS .AppName)}}(t))
+
+		assert.GreaterOrEqualf(t, id, int64(1), "want >= 1, got %d", id)
+		assert.Nilf(t, err, "want nil, got %v", err)
+	})
+
+	t.Run("-- find all {{.AppName}}", func(t *testing.T) {
+		t.Parallel()
+		mockLogger := NewMockILogger(ctrl)
+		repo := sqlite3.NewRepository(dbConn, mockLogger)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+		defer cancel()
+
+		// create user
+		{{.AppName}}, err := repo.Find{{capitalize .AppName}}(ctx, &dtos.Find{{capitalize .AppName}}Params{})
+
+		assert.NotNil(t, {{.AppName}}, "want data, got nil")
+		assert.Nilf(t, err, "want nil, got %v", err)
+	})
+
+	t.Run("-- get user with valid id", func(t *testing.T) {
+		t.Parallel()
+		mockLogger := NewMockILogger(ctrl)
+		repo := sqlite3.NewRepository(dbConn, mockLogger)
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+		defer cancel()
+
+		valid{{capitalize (trimS .AppName)}} := createValid{{capitalize (trimS .AppName)}}(t)
+		// create user
+		id, err := repo.Create{{capitalize (trimS .AppName)}}(ctx, valid{{capitalize (trimS .AppName)}})
+
+		assert.GreaterOrEqualf(t, id, int64(1), "want >= 1, got %d", id)
+		assert.Nilf(t, err, "want nil, got %v", err)
+
+		// verify the created user
+		got{{capitalize (trimS .AppName)}}, err := repo.Get{{capitalize (trimS .AppName)}}(ctx, &dtos.Get{{capitalize (trimS .AppName)}}Params{
+			ID: id,
+		})
+		assert.Nilf(t, err, "want nil, got %v", err)
+
+		assert.Equalf(t, valid{{capitalize (trimS .AppName)}}.Email, got{{capitalize (trimS .AppName)}}.Email, "want '%s', got '%s'", valid{{capitalize (trimS .AppName)}}.Email, got{{capitalize (trimS .AppName)}}.Email)
+		assert.Equalf(t, valid{{capitalize (trimS .AppName)}}.Username, got{{capitalize (trimS .AppName)}}.Username, "want '%s', got '%s'", valid{{capitalize (trimS .AppName)}}.Email, got{{capitalize (trimS .AppName)}}.Email)
+	})
+
+	t.Run("-- update user with valid id", func(t *testing.T) {
+		t.Parallel()
+		mockLogger := NewMockILogger(ctrl)
+		repo := sqlite3.NewRepository(dbConn, mockLogger)
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+		defer cancel()
+
+		valid{{capitalize (trimS .AppName)}} := createValid{{capitalize (trimS .AppName)}}(t)
+
+		// create user
+		id, err := repo.Create{{capitalize (trimS .AppName)}}(ctx, valid{{capitalize (trimS .AppName)}})
+
+		assert.GreaterOrEqualf(t, id, int64(1), "want >= 1, got %d", id)
+		assert.Nilf(t, err, "want nil, got %v", err)
+
+		updated{{capitalize (trimS .AppName)}} := &dtos.Update{{capitalize (trimS .AppName)}}Params{
+			ID:       id,
+			Username: addrOfStr(randomUsername()),
+			Email:    addrOfStr(randomEmail()),
+		}
+
+		// update user
+		err = repo.Update{{capitalize (trimS .AppName)}}(ctx, updated{{capitalize (trimS .AppName)}})
+		assert.Nilf(t, err, "want nil, got %v", err)
+
+		// verify the update
+		got{{capitalize (trimS .AppName)}}, err := repo.Get{{capitalize (trimS .AppName)}}(ctx, &dtos.Get{{capitalize (trimS .AppName)}}Params{
+			ID: id,
+		})
+		assert.Nilf(t, err, "want nil, got %v", err)
+
+		assert.Equalf(t, *updated{{capitalize (trimS .AppName)}}.Email, got{{capitalize (trimS .AppName)}}.Email, "want '%s', got '%s'", *updated{{capitalize (trimS .AppName)}}.Email, got{{capitalize (trimS .AppName)}}.Email)
+		assert.Equalf(t, *updated{{capitalize (trimS .AppName)}}.Username, got{{capitalize (trimS .AppName)}}.Username, "want '%s', got '%s'", *updated{{capitalize (trimS .AppName)}}.Email, got{{capitalize (trimS .AppName)}}.Email)
+	})
+
+	t.Run("-- delete user with valid id", func(t *testing.T) {
+		t.Parallel()
+		mockLogger := NewMockILogger(ctrl)
+		repo := sqlite3.NewRepository(dbConn, mockLogger)
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+		defer cancel()
+
+		valid{{capitalize (trimS .AppName)}} := createValid{{capitalize (trimS .AppName)}}(t)
+
+		// create user
+		id, err := repo.Create{{capitalize (trimS .AppName)}}(ctx, valid{{capitalize (trimS .AppName)}})
+
+		assert.GreaterOrEqualf(t, id, int64(1), "want >= 1, got %d", id)
+		assert.Nilf(t, err, "want nil, got %v", err)
+
+		// delete user
+		err = repo.Delete{{capitalize (trimS .AppName)}}(ctx, &dtos.Delete{{capitalize (trimS .AppName)}}Params{
+			ID: id,
+		})
+		assert.Nilf(t, err, "want nil, got %v", err)
+
+		// verify the delete
+		got{{capitalize (trimS .AppName)}}, err := repo.Get{{capitalize (trimS .AppName)}}(ctx, &dtos.Get{{capitalize (trimS .AppName)}}Params{
+			ID: id,
+		})
+		assert.Nilf(t, got{{capitalize (trimS .AppName)}}, "want nil, got %v", got{{capitalize (trimS .AppName)}})
+		assert.ErrorIs(t, err, lib.ErrNoRecord, "want lib.ErrNoRecord, got %s", err)
+	})
 }
 
-func Test{{capitalize .AppName}}Repository_NonExistentRUD(t *testing.T) {
+func Test{{capitalize .AppName}}Repository_NonExistentID(t *testing.T) {
+	t.Parallel()
+	if !INTEGRATION_TESTS {
+		t.Errorf("skipping tests | INTEGRATION_TESTS = '%v'", INTEGRATION_TESTS)
+		t.FailNow()
+	}
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	// mockLogger := NewMockILogger(ctrl)
+
+	t.Run("-- read user with invalid id", func(t *testing.T) {
+		t.Parallel()
+		mockLogger := NewMockILogger(ctrl)
+		repo := sqlite3.NewRepository(dbConn, mockLogger)
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+		defer cancel()
+
+		got{{capitalize (trimS .AppName)}}, err := repo.Get{{capitalize (trimS .AppName)}}(ctx, &dtos.Get{{capitalize (trimS .AppName)}}Params{
+			ID: -1,
+		})
+		assert.Nilf(t, got{{capitalize (trimS .AppName)}}, "want nil, got %v", got{{capitalize (trimS .AppName)}})
+		assert.NotNil(t, err)
+		assert.ErrorIs(t, lib.ErrNoRecord, err)
+	})
+	t.Run("-- update user with invalid id", func(t *testing.T) {
+		t.Parallel()
+		mockLogger := NewMockILogger(ctrl)
+		repo := sqlite3.NewRepository(dbConn, mockLogger)
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+		defer cancel()
+
+		err := repo.Update{{capitalize (trimS .AppName)}}(ctx, &dtos.Update{{capitalize (trimS .AppName)}}Params{
+			ID: -1,
+		})
+
+		assert.NotNil(t, err)
+		assert.ErrorIs(t, lib.ErrNoRecord, err)
+	})
+	t.Run("-- delete user with invalid id", func(t *testing.T) {
+		t.Parallel()
+		mockLogger := NewMockILogger(ctrl)
+		repo := sqlite3.NewRepository(dbConn, mockLogger)
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+		defer cancel()
+
+		err := repo.Delete{{capitalize (trimS .AppName)}}(ctx, &dtos.Delete{{capitalize (trimS .AppName)}}Params{
+			ID: -1,
+		})
+
+		assert.NotNil(t, err)
+		assert.ErrorIs(t, lib.ErrNoRecord, err)
+	})
 }
 
 func Test{{capitalize .AppName}}Repository_ConstrainsValidation(t *testing.T) {
+	t.Parallel()
+	if !INTEGRATION_TESTS {
+		t.Errorf("skipping tests | INTEGRATION_TESTS = '%v'", INTEGRATION_TESTS)
+		t.FailNow()
+	}
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	t.Run("-- unique email", func(t *testing.T) {
+		t.Parallel()
+		mockLogger := NewMockILogger(ctrl)
+		repo := sqlite3.NewRepository(dbConn, mockLogger)
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+		defer cancel()
+
+		user := createValid{{capitalize (trimS .AppName)}}(t)
+		repo.Create{{capitalize (trimS .AppName)}}(ctx, user)
+
+		_, err := repo.Create{{capitalize (trimS .AppName)}}(ctx, user)
+
+		assert.NotNil(t, err, "want unique constraint error, got nil", err)
+		assert.Equal(t, "email already exists", err.Error())
+	})
+
+	t.Run("-- unique username", func(t *testing.T) {
+		t.Parallel()
+		mockLogger := NewMockILogger(ctrl)
+		repo := sqlite3.NewRepository(dbConn, mockLogger)
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+		defer cancel()
+
+		user := createValid{{capitalize (trimS .AppName)}}(t)
+		repo.Create{{capitalize (trimS .AppName)}}(ctx, user)
+
+		user.Email = randomEmail()
+
+		_, err := repo.Create{{capitalize (trimS .AppName)}}(ctx, user)
+
+		assert.NotNil(t, err, "want unique constraint error, got nil", err)
+		assert.Equal(t, "username already exists", err.Error())
+	})
+
+	t.Run("-- empty username", func(t *testing.T) {
+		t.Parallel()
+		mockLogger := NewMockILogger(ctrl)
+		repo := sqlite3.NewRepository(dbConn, mockLogger)
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+		defer cancel()
+
+		user := createValid{{capitalize (trimS .AppName)}}(t)
+		user.Username = ""
+
+		id, err := repo.Create{{capitalize (trimS .AppName)}}(ctx, user)
+		assert.Negative(t, id)
+		assert.NotNilf(t, err, "want CHECK constraint failed, got: '%v'", err)
+	})
+	t.Run("-- empty email", func(t *testing.T) {
+		t.Parallel()
+		mockLogger := NewMockILogger(ctrl)
+		repo := sqlite3.NewRepository(dbConn, mockLogger)
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+		defer cancel()
+
+		user := createValid{{capitalize (trimS .AppName)}}(t)
+		user.Email = ""
+
+		id, err := repo.Create{{capitalize (trimS .AppName)}}(ctx, user)
+		assert.Negative(t, id)
+		assert.NotNilf(t, err, "want CHECK constraint failed, got: '%v'", err)
+	})
+	t.Run("-- empty password", func(t *testing.T) {
+		t.Parallel()
+		mockLogger := NewMockILogger(ctrl)
+		repo := sqlite3.NewRepository(dbConn, mockLogger)
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+		defer cancel()
+
+		user := createValid{{capitalize (trimS .AppName)}}(t)
+		user.Password = ""
+
+		id, err := repo.Create{{capitalize (trimS .AppName)}}(ctx, user)
+		assert.Negative(t, id)
+		assert.NotNilf(t, err, "want CHECK constraint failed, got: '%v'", err)
+	})
 }
 
 func Test{{capitalize .AppName}}Repository_HashingPassword(t *testing.T) {
-}
+	t.Parallel()
+	if !INTEGRATION_TESTS {
+		t.Errorf("skipping tests | INTEGRATION_TESTS = '%v'", INTEGRATION_TESTS)
+		t.FailNow()
+	}
 
-func Test{{capitalize (trimS .AppName)}}Repository_ErrorHandling(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockLogger := NewMockILogger(ctrl)
+
+	repo := sqlite3.NewRepository(dbConn, mockLogger)
+
+	plainTextPassword := "securepassword"
+	password, err := rootApp.Hash(plainTextPassword)
+	assert.Nilf(t, err, "hashing failed, got err %v", err)
+
+	user := createValid{{capitalize (trimS .AppName)}}(t)
+	user.Password = password
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+	defer cancel()
+	// create user
+	id, err := repo.Create{{capitalize (trimS .AppName)}}(ctx, user)
+	assert.Nilf(t, err, "create user failed, got err %v", err)
+
+	// get user
+	userFromRepo, err := repo.Get{{capitalize (trimS .AppName)}}(ctx, &dtos.Get{{capitalize (trimS .AppName)}}Params{
+		ID: id,
+	})
+	assert.Nilf(t, err, "want nil, got err %v", err)
+
+	ok, err := rootApp.CompareHashAndPassword(plainTextPassword, userFromRepo.HashedPassword)
+	assert.Nilf(t, err, "want nil, got err: %v", err)
+	assert.Equalf(t, true, ok, "password '%s' and hash '%s' doesn't match", password, userFromRepo.HashedPassword)
 }
 
 func Test{{capitalize .AppName}}Repository_SQLInjection(t *testing.T) {
+	t.Parallel()
+	if !INTEGRATION_TESTS {
+		t.Errorf("skipping tests | INTEGRATION_TESTS = '%v'", INTEGRATION_TESTS)
+		t.FailNow()
+	}
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockLogger := NewMockILogger(ctrl)
+
+	repo := sqlite3.NewRepository(dbConn, mockLogger)
+	maliciousInput := randomEmail() + "; DROP TABLE {{.AppName}};"
+
+	user := createValid{{capitalize (trimS .AppName)}}(t)
+	user.Email = maliciousInput
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+	defer cancel()
+	_, err := repo.Create{{capitalize (trimS .AppName)}}(ctx, user)
+	assert.Nilf(t, err, "want nil, got: '%v'", err)
+
+	// anticipating to delete the table with injected sql
+	userByEmail, err := repo.Get{{capitalize (trimS .AppName)}}ByEmail(ctx, &dtos.Get{{capitalize (trimS .AppName)}}Params{
+		Email: maliciousInput,
+	})
+	assert.Nilf(t, err, "want nil, got '%v', user: '%v'", userByEmail, err)
+
+	// trying to get data from the probably deleted table
+	userByEmail, err = repo.Get{{capitalize (trimS .AppName)}}ByEmail(ctx, &dtos.Get{{capitalize (trimS .AppName)}}Params{
+		Email: maliciousInput,
+	})
+	assert.Nilf(t, err, "want nil, got '%v', user: '%v'", userByEmail, err)
 }

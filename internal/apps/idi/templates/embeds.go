@@ -42,8 +42,23 @@ var repoTestFile []byte
 //go:embed files/app/tests/main.test.go.tmpl
 var mainTestFile []byte
 
-//go:embed files/app/users.sql.tmpl
-var usersSQLFile []byte
+//go:embed files/app/users.migrations.sql.tmpl
+var usersMigrationFile []byte
+
+//go:embed files/app/tests/application.test.go.tmpl
+var applicationTestFile []byte
+
+//go:embed files/app/tests/controller.test.go.tmpl
+var controllerTestFile []byte
+
+//go:embed files/app/tests/random.test.go.tmpl
+var randomTestFile []byte
+
+//go:embed files/app/tests/schema.test.go.tmpl
+var schemaTestFile []byte
+
+//go:embed files/app/tests/testdb.test.go.tmpl
+var testDBTestFile []byte
 
 // app files end
 
@@ -114,4 +129,7 @@ var makeFile []byte
 
 //go:embed files/framework/dotenv.go.tmpl
 var dotEnvFile []byte
+
 // framework files end
+
+// test files start

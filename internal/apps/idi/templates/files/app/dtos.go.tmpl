@@ -1,27 +1,30 @@
 package dtos
 
+import "time"
+
 type (
 	{{capitalize (trimS .AppName)}} struct {
-		ID        int64  `json:"id"`
-		Username  string `json:"task"`
-		Email     string `json:"description"`
-		Password  string `json:"archived"`
-		CreatedAt string `json:"created_at"`
-		UpdatedAt string `json:"updated_at"`
+		ID             int64     `json:"id"`
+		Username       string    `json:"username"`
+		Email          string    `json:"email"`
+		HashedPassword string    `json:"-"`
+		CreatedAt      time.Time `json:"created_at"`
+		UpdatedAt      time.Time `json:"updated_at"`
 	}
 	Get{{capitalize (trimS .AppName)}}Params struct {
-		ID int64
+		ID    int64
+		Email string
 	}
 	Find{{capitalize .AppName}}Params  struct{}
 	Create{{capitalize (trimS .AppName)}}Params struct {
-		Username string `json:"task"`
+		{{capitalize (trimS .AppName)}}name string `json:"task"`
 		Email    string `json:"description"`
 		Password string `json:"password"`
 	}
 	Update{{capitalize (trimS .AppName)}}Params struct {
-		ID          int64     `json:"id"`
-		Username        string `json:"task"`
-		Email 			string 	`json:"description"`
+		{{capitalize (trimS .AppName)}}name *string `json:"task"`
+		Email    *string `json:"description"`
+		ID       int64  `json:"id"`
 	}
 	Delete{{capitalize (trimS .AppName)}}Params struct {
 		ID int64
