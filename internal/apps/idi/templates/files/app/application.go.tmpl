@@ -69,7 +69,7 @@ func (t *{{ capitalize .AppName }}) Create{{ capitalize (trimS .AppName) }}(ctx 
 	arg.Password, _ = t.RootApp.Hash(arg.Password)
 	{{end}}
 
-	return t.Repo.CreateUser(ctx, arg)
+	return t.Repo.Create{{capitalize (trimS .AppName)}}(ctx, arg)
 }
 
 func (t *{{ capitalize .AppName }}) Update{{ capitalize (trimS .AppName) }}(ctx context.Context, arg *dtos.Update{{ capitalize (trimS .AppName) }}Params) error {

@@ -17,13 +17,13 @@ type (
 	}
 	Find{{capitalize .AppName}}Params  struct{}
 	Create{{capitalize (trimS .AppName)}}Params struct {
-		{{capitalize (trimS .AppName)}}name string `json:"task"`
-		Email    string `json:"description"`
+		Username string `json:"username"`
+		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
 	Update{{capitalize (trimS .AppName)}}Params struct {
-		{{capitalize (trimS .AppName)}}name *string `json:"task"`
-		Email    *string `json:"description"`
+		Username *string `json:"username"`
+		Email    *string `json:"email"`
 		ID       int64  `json:"id"`
 	}
 	Delete{{capitalize (trimS .AppName)}}Params struct {

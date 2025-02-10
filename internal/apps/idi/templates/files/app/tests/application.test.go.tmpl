@@ -3,15 +3,19 @@ package {{.AppName}}_test
 import (
 	"context"
 	"fmt"
+	{{if eq .AppName "users"}}
 	"regexp"
+	{{end}}
 	"testing"
 	"time"
 
-	"{{.ProjectName}}/internal/apps/users/internal/adapters/sqlite3"
-	"{{.ProjectName}}/internal/apps/users/internal/application"
-	"{{.ProjectName}}/internal/apps/users/internal/application/domain"
-	"{{.ProjectName}}/internal/dtos"
+	"{{.ProjectName}}/internal/apps/{{.AppName}}/internal/adapters/sqlite3"
+	"{{.ProjectName}}/internal/apps/{{.AppName}}/internal/application"
 
+	{{if eq .AppName "users"}}
+	"{{.ProjectName}}/internal/apps/{{.AppName}}/internal/application/domain"
+	{{end}}
+	"{{.ProjectName}}/internal/dtos"
 	"{{.ProjectName}}/internal/lib"
 
 	"github.com/golang/mock/gomock"

@@ -365,6 +365,7 @@ func Test{{capitalize .AppName}}Repository_SQLInjection(t *testing.T) {
 	assert.Nilf(t, err, "want nil, got: '%v'", err)
 
 	// anticipating to delete the table with injected sql
+	{{if eq .AppName "users"}}
 	userByEmail, err := repo.Get{{capitalize (trimS .AppName)}}ByEmail(ctx, &dtos.Get{{capitalize (trimS .AppName)}}Params{
 		Email: maliciousInput,
 	})
@@ -375,4 +376,7 @@ func Test{{capitalize .AppName}}Repository_SQLInjection(t *testing.T) {
 		Email: maliciousInput,
 	})
 	assert.Nilf(t, err, "want nil, got '%v', user: '%v'", userByEmail, err)
+	{{else}}
+	// continue the test with respect to this service
+	{{end}}
 }

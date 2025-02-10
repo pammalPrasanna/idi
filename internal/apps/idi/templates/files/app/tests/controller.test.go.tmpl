@@ -165,7 +165,7 @@ func createRESTTestCases(t *testing.T) []handlerTests {
 				},
 				{
 					tcName:         "validation errors",
-					schema:         userValidationSchema422,
+					schema:         {{trimS .AppName}}ValidationSchema422,
 					expectedStatus: http.StatusUnprocessableEntity,
 					targetUrl:      "/{{.AppName}}",
 					mockReturns: []any{
@@ -226,7 +226,7 @@ func createRESTTestCases(t *testing.T) []handlerTests {
 				},
 				{
 					tcName:         "validation errors",
-					schema:         userValidationSchema422,
+					schema:         {{trimS .AppName}}ValidationSchema422,
 					expectedStatus: http.StatusUnprocessableEntity,
 					targetUrl:      "/{{.AppName}}/1",
 					mockReturns: []any{

@@ -1,17 +1,17 @@
 package domain
 
 import (
-	"regexp"
 	"strings"
+	"unicode/utf8"
 	
 	{{if eq .AppName "users"}}
-	"unicode/utf8"
+	"regexp"
 	{{end}}
 
 	"{{.ProjectName}}/internal/lib"
 )
 
-func IsValid{{capitalize (trimS .AppName)}}name(v *lib.Validator, username string) {
+func IsValidUsername(v *lib.Validator, username string) {
 	username = strings.TrimSpace(username)
 	v.Check("username", utf8.RuneCountInString(username) < 2, "username should be minimum 2 characters")
 	v.Check("username", utf8.RuneCountInString(username) > 64, "username should be maximum 64 characters")

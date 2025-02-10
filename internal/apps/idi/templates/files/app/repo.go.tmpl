@@ -29,7 +29,7 @@ func NewRepository(db *sql.DB, logger lib.ILogger) *Sqlite3Repository {
 const get{{capitalize (trimS .AppName)}}Stmt = `
 SELECT
 	id,
-	{{trimS .AppName}}name,
+	username,
 	email,
 	hashed_password,
 	created_at,
@@ -50,7 +50,7 @@ func (t *Sqlite3Repository) Get{{capitalize (trimS .AppName)}}(ctx context.Conte
 	{{trimS .AppName}} = &dtos.{{capitalize (trimS .AppName)}}{}
 	err = row.Scan(
 		&{{trimS .AppName}}.ID,
-		&{{trimS .AppName}}.{{capitalize (trimS .AppName)}}name,
+		&{{trimS .AppName}}.Username,
 		&{{trimS .AppName}}.Email,
 		&{{trimS .AppName}}.HashedPassword,
 		&{{trimS .AppName}}.CreatedAt,
@@ -68,6 +68,7 @@ func (t *Sqlite3Repository) Get{{capitalize (trimS .AppName)}}(ctx context.Conte
 	return {{trimS .AppName}}, nil
 }
 
+{{if eq .AppName "users"}}
 const get{{capitalize (trimS .AppName)}}ByEmailStmt = `
 SELECT
 	id,
@@ -92,7 +93,7 @@ func (t *Sqlite3Repository) Get{{capitalize (trimS .AppName)}}ByEmail(ctx contex
 	{{trimS .AppName}} = &dtos.{{capitalize (trimS .AppName)}}{}
 	err = row.Scan(
 		&{{trimS .AppName}}.ID,
-		&{{trimS .AppName}}.{{capitalize (trimS .AppName)}}name,
+		&{{trimS .AppName}}.Username,
 		&{{trimS .AppName}}.Email,
 		&{{trimS .AppName}}.HashedPassword,
 		&{{trimS .AppName}}.CreatedAt,
@@ -109,6 +110,7 @@ func (t *Sqlite3Repository) Get{{capitalize (trimS .AppName)}}ByEmail(ctx contex
 	}
 	return {{trimS .AppName}}, nil
 }
+{{end}}
 
 const list{{capitalize .AppName}}Stmt = `
 SELECT
@@ -141,7 +143,7 @@ func (t *Sqlite3Repository) Find{{capitalize .AppName}}(ctx context.Context, arg
 		{{trimS .AppName}} := &dtos.{{capitalize (trimS .AppName)}}{}
 		if rowErr := rows.Scan(
 			&{{trimS .AppName}}.ID,
-			&{{trimS .AppName}}.{{capitalize (trimS .AppName)}}name,
+			&{{trimS .AppName}}.Username,
 			&{{trimS .AppName}}.Email,
 			&{{trimS .AppName}}.CreatedAt,
 			&{{trimS .AppName}}.UpdatedAt,
@@ -161,7 +163,7 @@ VALUES
 	(?, ?, ?) RETURNING id`
 
 func (t *Sqlite3Repository) Create{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Create{{capitalize (trimS .AppName)}}Params) (id int64, err error) {
-	row := t.db.QueryRowContext(ctx, create{{capitalize (trimS .AppName)}}Stmt, arg.{{capitalize (trimS .AppName)}}name, arg.Email, arg.Password)
+	row := t.db.QueryRowContext(ctx, create{{capitalize (trimS .AppName)}}Stmt, arg.Username, arg.Email, arg.Password)
 	err = row.Scan(&id)
 	if err != nil {
 		switch {
@@ -192,7 +194,7 @@ func (t *Sqlite3Repository) Update{{capitalize (trimS .AppName)}}(ctx context.Co
 	if arg.ID <= 0 {
 		return lib.ErrNoRecord
 	}
-	_, err := t.db.ExecContext(ctx, update{{capitalize (trimS .AppName)}}Stmt, *arg.{{capitalize (trimS .AppName)}}name, *arg.Email, lib.ITime(time.Now()).Time(), arg.ID)
+	_, err := t.db.ExecContext(ctx, update{{capitalize (trimS .AppName)}}Stmt, *arg.Username, *arg.Email, lib.ITime(time.Now()).Time(), arg.ID)
 	return err
 }
 
