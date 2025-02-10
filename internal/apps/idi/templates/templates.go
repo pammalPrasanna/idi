@@ -216,8 +216,8 @@ var appDefaultFiles = map[string]*itemplate{
 		path:    "internal/apps/{app_name}/internal/tests/random_test.go",
 		content: randomTestFile,
 	},
-	"schema_test.go": {
-		path:    "internal/apps/{app_name}/internal/tests/schema_test.go",
+	"schemas_test.go": {
+		path:    "internal/apps/{app_name}/internal/tests/schemas_test.go",
 		content: schemaTestFile,
 	},
 	"testdb_test.go": {

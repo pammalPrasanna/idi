@@ -112,7 +112,7 @@ func createRESTTestCases(t *testing.T) []handlerTests {
 			// 200, 404, 422, 500
 			tests: []restTc{
 				{
-					tcName:         "get user with id",
+					tcName:         "get {{trimS .AppName}} with id",
 					schema:         get{{capitalize (trimS .AppName)}}Schema200,
 					expectedStatus: http.StatusOK,
 					targetUrl:      "/{{.AppName}}/1",

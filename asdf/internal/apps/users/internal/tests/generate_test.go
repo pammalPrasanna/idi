@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"asdf/internal/dtos"
 	"asdf/internal/lib"
-	"asdf/internal/lib/auth"
 	"time"
 
 	"github.com/julienschmidt/httprouter"
