@@ -18,6 +18,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	
 	// handle DB close on application exit
 	defer func() {
 		if err := rootApp.Sqlite3().Close(); err != nil {
@@ -26,6 +27,7 @@ func main() {
 			rootApp.Logger().Info("closed Sqlite3 successfully")
 		}
 	}()
+	
 
 	err = api.Main(rootApp)
 	if err != nil {
@@ -35,3 +37,4 @@ func main() {
 		os.Exit(1)
 	}
 }
+

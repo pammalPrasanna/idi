@@ -2,46 +2,32 @@ package domain
 
 import (
 	"strings"
-	"time"
+	"unicode/utf8"
+	
+	
+	"regexp"
+	
 
 	"without-alias/internal/lib"
 )
 
-type User struct {
-	DueDate     lib.ITime
-	Task        string
-	Description string
+func IsValidUsername(v *lib.Validator, username string) {
+	username = strings.TrimSpace(username)
+	v.Check("username", utf8.RuneCountInString(username) < 2, "username should be minimum 2 characters")
+	v.Check("username", utf8.RuneCountInString(username) > 64, "username should be maximum 64 characters")
 }
 
-func NewUser(task string, description string, dueDate lib.ITime) (*User, error) {
 
-	v := lib.NewValidator()
-
-	// check task
-	task = strings.TrimSpace(task)
-	v.Check("task", len(task) < 3, "task should be minimum 3 characters")
-
-	// check description
-	if description != "" {
-		v.Check("description", len(description) < 5, "description should be minimum 5 characters")
+var emailRx = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+func IsValidEmail(v *lib.Validator, email string) {
+	if emailRx == nil {
+		emailRx = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 	}
-
-	// check DueDate
-	// need more tolerance
-	if dueDate.IsZero() {
-		v.AddError("due_date", "due cannot be empty")
-	} else {
-		due := time.Now().Compare(dueDate.Time())
-		v.Check("due_date", due >= 0, "due should be in future")
-	}
-
-	if v.Valid() {
-		return &User{
-			Task:        task,
-			Description: description,
-			DueDate:     dueDate,
-		}, nil
-	} else {
-		return nil, v.Errors()
-	}
+	v.Check("email", !emailRx.MatchString(email), "invalid email")
 }
+
+func IsValidPassword(v *lib.Validator, password string) {
+	v.Check("password", utf8.RuneCountInString(password) < 8, "password should be minimum 8 characters")
+	v.Check("password", utf8.RuneCountInString(password) > 64, "password should be maximum 64 characters")
+}
+

@@ -6,9 +6,9 @@ import (
 	"time"
 
 	infra "without-alias/internal/infrastructure"
-
+	
 	"without-alias/internal/lib/auth"
-
+	
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -22,6 +22,7 @@ type idi struct {
 	router *httprouter.Router
 	server *http.Server
 
+
 	postgres *sql.DB
 
 	// auth
@@ -30,7 +31,7 @@ type idi struct {
 }
 
 var (
-	_    IApp = (*idi)(nil)
+	_ IApp = (*idi)(nil)
 	_idi *idi
 )
 
@@ -57,11 +58,14 @@ func Idi() (*idi, error) {
 	}
 	_idi.postgres = conn
 
-	jwt, err := auth.NewJWTMaker(_idi.tokenExpiration, _idi.jwtSecret, _idi.baseURL)
+
+	
+	paseto, err := auth.NewPasetoMaker(_idi.tokenExpiration, _idi.symmetricKey, _idi.baseURL)
 	if err != nil {
 		return nil, err
 	}
-	_idi.IAuth = jwt
+	_idi.IAuth = paseto
+	
 
 	server, err := newServer(_idi.port, _idi.router, _idi.logger)
 	if err != nil {

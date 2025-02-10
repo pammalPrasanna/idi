@@ -29,7 +29,7 @@ func newLogger(out io.Writer) *slogLogger {
 	logger = &slogLogger{
 		log: sl,
 	}
-
+	
 	return logger
 }
 

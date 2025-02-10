@@ -12,6 +12,7 @@ import (
 	"github.com/tomasen/realip"
 )
 
+
 func (i *rootApp) RequireAuthenticatedUser(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Vary", "Authorization")
@@ -62,6 +63,7 @@ func (i *rootApp) RequireAuthenticatedUser(next http.HandlerFunc) http.HandlerFu
 	})
 }
 
+
 func (i *rootApp) recoverPanicM(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
@@ -81,7 +83,7 @@ func (i *rootApp) corsM(next http.Handler) http.Handler {
 		// CORS headers
 		if yes := slices.Contains(i.trustedOrigins, "*"); yes {
 			// Use "*" for all origins, or replace with specific origins
-			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Set("Access-Control-Allow-Origin", "*") 
 			w.Header().Set("Access-Control-Allow-Credentials", "false")
 		} else {
 			rOrigin := r.Header.Get("Origin")

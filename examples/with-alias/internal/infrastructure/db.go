@@ -7,7 +7,8 @@ import (
 	"time"
 
 	_ "github.com/joho/godotenv/autoload"
-
+	
+	
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -27,6 +28,13 @@ var (
 
 	instance *sql.DB
 )
+
+
+
+
+
+
+
 
 func Sqlite3() (*sql.DB, error) {
 	if instance != nil {
@@ -76,6 +84,7 @@ func Sqlite3() (*sql.DB, error) {
 	} else {
 		conn.SetConnMaxLifetime(defaultConnMaxLifetime)
 	}
+
 
 	instance = conn
 	return instance, nil

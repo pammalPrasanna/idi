@@ -18,6 +18,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	
 	// handle DB close on application exit
 	defer func() {
 		if err := idi.Postgres().Close(); err != nil {
@@ -26,6 +27,7 @@ func main() {
 			idi.Logger().Info("closed Postgres successfully")
 		}
 	}()
+	
 
 	err = api.Main(idi)
 	if err != nil {
@@ -35,3 +37,4 @@ func main() {
 		os.Exit(1)
 	}
 }
+

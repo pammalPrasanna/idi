@@ -35,7 +35,9 @@ type (
 		}
 
 		IApp interface {
+		{{if (ne .DBName "")}}
 		{{capitalize .DBName}}() *sql.DB
+		{{end}}
 		Logger() lib.ILogger
 
 		Mux() *httprouter.Router

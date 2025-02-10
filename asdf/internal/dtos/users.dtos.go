@@ -17,13 +17,13 @@ type (
 	}
 	FindUsersParams  struct{}
 	CreateUserParams struct {
-		Username string `json:"task"`
-		Email    string `json:"description"`
+		Username string `json:"username"`
+		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
 	UpdateUserParams struct {
-		Username *string `json:"task"`
-		Email    *string `json:"description"`
+		Username *string `json:"username"`
+		Email    *string `json:"email"`
 		ID       int64  `json:"id"`
 	}
 	DeleteUserParams struct {

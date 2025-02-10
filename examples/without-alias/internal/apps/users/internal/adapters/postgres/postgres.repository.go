@@ -1,24 +1,26 @@
-package postgres
+package sqlite3
 
 import (
 	"context"
 	"database/sql"
 	"errors"
+	"strings"
+	"time"
 
 	"without-alias/internal/apps/users/internal/application/ports"
 	"without-alias/internal/dtos"
 	"without-alias/internal/lib"
 )
 
-type PostgresRepository struct {
+type Sqlite3Repository struct {
 	db     *sql.DB
 	logger lib.ILogger
 }
 
-var _ ports.IUsersRepository = (*PostgresRepository)(nil)
+var _ ports.IUsersRepository = (*Sqlite3Repository)(nil)
 
-func NewRepository(db *sql.DB, logger lib.ILogger) *PostgresRepository {
-	return &PostgresRepository{
+func NewRepository(db *sql.DB, logger lib.ILogger) *Sqlite3Repository {
+	return &Sqlite3Repository{
 		db,
 		logger,
 	}
@@ -26,7 +28,12 @@ func NewRepository(db *sql.DB, logger lib.ILogger) *PostgresRepository {
 
 const getUserStmt = `
 SELECT
-	id
+	id,
+	username,
+	email,
+	hashed_password,
+	created_at,
+	updated_at
 FROM
 	users
 WHERE
@@ -35,7 +42,7 @@ LIMIT
 	1
 `
 
-func (t PostgresRepository) GetUser(ctx context.Context, arg *dtos.GetUserParams) (user *dtos.User, err error) {
+func (t *Sqlite3Repository) GetUser(ctx context.Context, arg *dtos.GetUserParams) (user *dtos.User, err error) {
 	if arg.ID <= 0 {
 		return nil, lib.ErrNoRecord
 	}
@@ -43,62 +50,132 @@ func (t PostgresRepository) GetUser(ctx context.Context, arg *dtos.GetUserParams
 	user = &dtos.User{}
 	err = row.Scan(
 		&user.ID,
+		&user.Username,
+		&user.Email,
+		&user.HashedPassword,
+		&user.CreatedAt,
+		&user.UpdatedAt,
 	)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
 			return nil, lib.ErrNoRecord
+
+		default:
+			return nil, err
 		}
 	}
 	return user, nil
 }
 
+
+const getUserByEmailStmt = `
+SELECT
+	id,
+	username,
+	email,
+	hashed_password,
+	created_at,
+	updated_at
+FROM
+	users
+WHERE
+	email = ?
+LIMIT
+	1
+`
+
+func (t *Sqlite3Repository) GetUserByEmail(ctx context.Context, arg *dtos.GetUserParams) (user *dtos.User, err error) {
+	if arg.Email == "" {
+		return nil, lib.ErrNoRecord
+	}
+	row := t.db.QueryRowContext(ctx, getUserByEmailStmt, arg.Email)
+	user = &dtos.User{}
+	err = row.Scan(
+		&user.ID,
+		&user.Username,
+		&user.Email,
+		&user.HashedPassword,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, lib.ErrNoRecord
+
+		default:
+			return nil, err
+		}
+	}
+	return user, nil
+}
+
+
 const listUsersStmt = `
 SELECT
-	id
+	id,
+	username,
+	email,
+	created_at,
+	updated_at
 FROM
 	users
 `
 
-func (t PostgresRepository) FindUsers(ctx context.Context, arg *dtos.FindUsersParams) (users []*dtos.User, err error) {
+func (t *Sqlite3Repository) FindUsers(ctx context.Context, arg *dtos.FindUsersParams) (users []*dtos.User, err error) {
 	rows, err := t.db.QueryContext(ctx, listUsersStmt)
 	if err != nil {
+		t.logger.Error("unable to query rows", "FindUsers", err)
 		return nil, err
 	}
 	defer func() {
 		rowsErr := rows.Close()
-		if err == nil {
-			err = rowsErr
-		} else {
-			t.logger.Error("unable to close rows", "FindUsers", err)
+		if rowsErr != nil {
+
+			t.logger.Error("unable to close rows", "FindUsers", rowsErr)
+			err = errors.Join(err, rowsErr)
 		}
 	}()
-	items := []*dtos.User{}
+
+	users = []*dtos.User{}
 	for rows.Next() {
-		i := &dtos.User{}
-		if err := rows.Scan(
-			&i.ID,
-		); err != nil {
+		user := &dtos.User{}
+		if rowErr := rows.Scan(
+			&user.ID,
+			&user.Username,
+			&user.Email,
+			&user.CreatedAt,
+			&user.UpdatedAt,
+		); rowErr != nil {
+			t.logger.Error("rows Scan() got errors", "Findusers", rowErr)
+			err = errors.Join(err, rowErr)
 			return nil, err
 		}
-		items = append(items, i)
+		users = append(users, user)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+	return users, err
 }
 
 const createUserStmt = `INSERT INTO
-	users (task, description)
+	users (username, email, hashed_password)
 VALUES
-	(?, ?) RETURNING id`
+	(?, ?, ?) RETURNING id`
 
-func (t PostgresRepository) CreateUser(ctx context.Context, arg *dtos.CreateUserParams) (id int64, err error) {
-	row := t.db.QueryRowContext(ctx, createUserStmt, arg.Task, arg.Description)
+func (t *Sqlite3Repository) CreateUser(ctx context.Context, arg *dtos.CreateUserParams) (id int64, err error) {
+	row := t.db.QueryRowContext(ctx, createUserStmt, arg.Username, arg.Email, arg.Password)
 	err = row.Scan(&id)
+	if err != nil {
+		switch {
+		case strings.Contains(err.Error(), "UNIQUE"):
+			return -1, lib.ErrNotUnique{
+				Msg: err.Error(),
+			}
+
+		default:
+			return -1, err
+		}
+	}
 	return id, err
 }
 
@@ -106,17 +183,18 @@ const updateUserStmt = `
 UPDATE
 	users
 set
-	task = ?,
-	description = ?
+	username = ?,
+	email = ?,
+	updated_at = ?
 WHERE
 	id = ?
 `
 
-func (t PostgresRepository) UpdateUser(ctx context.Context, arg *dtos.UpdateUserParams) error {
+func (t *Sqlite3Repository) UpdateUser(ctx context.Context, arg *dtos.UpdateUserParams) error {
 	if arg.ID <= 0 {
 		return lib.ErrNoRecord
 	}
-	_, err := t.db.ExecContext(ctx, updateUserStmt, arg.Task, arg.Description, arg.ID)
+	_, err := t.db.ExecContext(ctx, updateUserStmt, *arg.Username, *arg.Email, lib.ITime(time.Now()).Time(), arg.ID)
 	return err
 }
 
@@ -127,7 +205,7 @@ WHERE
 	id = ?
 `
 
-func (t PostgresRepository) DeleteUser(ctx context.Context, arg *dtos.DeleteUserParams) error {
+func (t *Sqlite3Repository) DeleteUser(ctx context.Context, arg *dtos.DeleteUserParams) error {
 	if arg.ID <= 0 {
 		return lib.ErrNoRecord
 	}

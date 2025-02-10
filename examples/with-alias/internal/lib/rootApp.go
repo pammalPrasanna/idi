@@ -6,9 +6,9 @@ import (
 	"time"
 
 	infra "with-alias/internal/infrastructure"
-
+	
 	"with-alias/internal/lib/auth"
-
+	
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -22,6 +22,7 @@ type rootApp struct {
 	router *httprouter.Router
 	server *http.Server
 
+
 	sqlite3 *sql.DB
 
 	// auth
@@ -30,7 +31,7 @@ type rootApp struct {
 }
 
 var (
-	_        IApp = (*rootApp)(nil)
+	_ IApp = (*rootApp)(nil)
 	_rootApp *rootApp
 )
 
@@ -57,11 +58,14 @@ func RootApp() (*rootApp, error) {
 	}
 	_rootApp.sqlite3 = conn
 
+
+	
 	paseto, err := auth.NewPasetoMaker(_rootApp.tokenExpiration, _rootApp.symmetricKey, _rootApp.baseURL)
 	if err != nil {
 		return nil, err
 	}
 	_rootApp.IAuth = paseto
+	
 
 	server, err := newServer(_rootApp.port, _rootApp.router, _rootApp.logger)
 	if err != nil {

@@ -1,31 +1,30 @@
 package dtos
 
-import "with-alias/internal/lib"
+import "time"
 
 type (
 	User struct {
-		ID          int64  `json:"id"`
-		Task        string `json:"task"`
-		Description string `json:"description"`
-		Archived    bool   `json:"archived"`
-		DueDate     string `json:"due_date"`
-		CreatedAt   string `json:"created_at"`
-		UpdatedAt   string `json:"updated_at"`
+		ID             int64     `json:"id"`
+		Username       string    `json:"username"`
+		Email          string    `json:"email"`
+		HashedPassword string    `json:"-"`
+		CreatedAt      time.Time `json:"created_at"`
+		UpdatedAt      time.Time `json:"updated_at"`
 	}
 	GetUserParams struct {
-		ID int64
+		ID    int64
+		Email string
 	}
 	FindUsersParams  struct{}
 	CreateUserParams struct {
-		Task        string    `json:"task"`
-		Description string    `json:"description"`
-		DueDate     lib.ITime `json:"due_date"`
+		Username string `json:"username"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
 	}
 	UpdateUserParams struct {
-		ID          int64     `json:"id"`
-		Description string    `json:"description"`
-		Task        string    `json:"task"`
-		DueDate     lib.ITime `json:"due_date"`
+		Username *string `json:"username"`
+		Email    *string `json:"email"`
+		ID       int64  `json:"id"`
 	}
 	DeleteUserParams struct {
 		ID int64

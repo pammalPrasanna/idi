@@ -18,7 +18,7 @@ type (
 
 		Mux() *httprouter.Router
 		ServeHTTP() error
-
+		
 		// context
 		ContextTime() time.Duration
 
@@ -28,6 +28,7 @@ type (
 		DecodeJSON(w http.ResponseWriter, r *http.Request, dst interface{}) error
 		DecodeJSONStrict(w http.ResponseWriter, r *http.Request, dst interface{}) error
 
+	
 		// Auth helpers
 		Hash(plaintextPassword string) (string, error)
 		CompareHashAndPassword(plaintextPassword, hashedPassword string) (bool, error)
@@ -36,16 +37,16 @@ type (
 		RequireAuthenticatedUser(next http.HandlerFunc) http.HandlerFunc
 		GetUserById(id int) (*IUser, error)
 		SetUserByIDMethod(fn func(id int) (*IUser, error))
-
+	
 		// rest helpers
-		BadRequest(w http.ResponseWriter, r *http.Request, err error)         // 400
+		BadRequest(w http.ResponseWriter, r *http.Request, data any)           // 400
 		AuthenticationRequired(w http.ResponseWriter, r *http.Request)        // 401
 		InvalidAuthenticationToken(w http.ResponseWriter, r *http.Request)    // 401
 		NotFound(w http.ResponseWriter, r *http.Request)                      // 404
 		MethodNotAllowed(w http.ResponseWriter, r *http.Request)              // 405
 		UnprocessableEntity(w http.ResponseWriter, r *http.Request, data any) // 422
 		ServerError(w http.ResponseWriter, r *http.Request, err error)        // 500
-
+		
 		ParseIntFromRequest(name string, r *http.Request) (int64, error)
 	}
 

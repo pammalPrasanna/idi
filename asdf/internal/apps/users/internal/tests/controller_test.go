@@ -69,7 +69,7 @@ func createRESTTestCases(t *testing.T) []handlerTests {
 	createdUser := &dtos.User{
 		ID:        1,
 		Username:  randomUsername(),
-		Email:     randomEmail(),
+		
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -317,13 +317,13 @@ func TestUsersController(t *testing.T) {
 						mockApp.EXPECT().FindUsers(gomock.Any(), gomock.Any()).Return(tc.mockReturns...).Times(1)
 					}
 				case handler.method == http.MethodGet && handler.url == "/users/:id":
-					router.HandlerFunc(handler.method, handler.url, usersController.GetUsersH)
+					router.HandlerFunc(handler.method, handler.url, usersController.GetUserH)
 					if tc.mockReturns != nil {
 						mockApp.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(tc.mockReturns...).Times(1)
 					}
 
 				case handler.method == http.MethodPost && handler.url == "/users":
-					router.HandlerFunc(handler.method, handler.url, usersController.CreateUsersH)
+					router.HandlerFunc(handler.method, handler.url, usersController.CreateUserH)
 					if tc.mockReturns != nil {
 						mockApp.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Return(tc.mockReturns...).Times(1)
 					}
@@ -334,7 +334,7 @@ func TestUsersController(t *testing.T) {
 					}
 
 				case handler.method == http.MethodDelete && handler.url == "/users/:id":
-					router.HandlerFunc(handler.method, handler.url, usersController.DeleteUsersH)
+					router.HandlerFunc(handler.method, handler.url, usersController.DeleteUserH)
 					if tc.mockReturns != nil {
 						mockApp.EXPECT().DeleteUser(gomock.Any(), gomock.Any()).Return(tc.mockReturns...).Times(1)
 					}

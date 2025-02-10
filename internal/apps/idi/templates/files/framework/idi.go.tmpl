@@ -51,13 +51,14 @@ func {{capitalize .Alias}}() (*{{.Alias}}, error) {
 	_{{.Alias}}.logger = newLogger(nil)
 	_{{.Alias}}.router = httprouter.New()
 
+{{if (ne .DBName "")}}
 	// open DB connection(s)
 	conn, err := infra.{{capitalize .DBName}}()
 	if err != nil {
 		return nil, err
 	}
 	_{{.Alias}}.{{.DBName}} = conn
-
+{{end}}
 {{if .IsAuth}}
 	{{if .IsPaseto}}
 	paseto, err := auth.NewPasetoMaker(_{{.Alias}}.tokenExpiration, _{{.Alias}}.symmetricKey, _{{.Alias}}.baseURL)
@@ -91,9 +92,11 @@ func {{capitalize .Alias}}() (*{{.Alias}}, error) {
 	return _{{.Alias}}, nil
 }
 
+{{if (ne .DBName "")}}
 func (i *{{.Alias}}) {{capitalize .DBName}}() *sql.DB {
 	return i.{{.DBName}}
 }
+{{end}}
 
 func (i *{{.Alias}}) Mux() *httprouter.Router {
 	return i.router

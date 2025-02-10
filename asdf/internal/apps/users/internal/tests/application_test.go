@@ -3,15 +3,19 @@ package users_test
 import (
 	"context"
 	"fmt"
+	
 	"regexp"
+	
 	"testing"
 	"time"
 
 	"asdf/internal/apps/users/internal/adapters/sqlite3"
 	"asdf/internal/apps/users/internal/application"
-	"asdf/internal/apps/users/internal/application/domain"
-	"asdf/internal/dtos"
 
+	
+	"asdf/internal/apps/users/internal/application/domain"
+	
+	"asdf/internal/dtos"
 	"asdf/internal/lib"
 
 	"github.com/golang/mock/gomock"
@@ -25,6 +29,7 @@ type bvat struct {
 	length      int
 	allowLength bool
 }
+
 
 func createPasswordTests(t *testing.T) []bvat {
 	t.Helper()
@@ -113,6 +118,7 @@ func createUsernameTests(t *testing.T) []bvat {
 	}
 	return tests
 }
+
 
 func TestUsersDomain(t *testing.T) {
 	t.Parallel()
@@ -205,7 +211,9 @@ func TestUsersDomain(t *testing.T) {
 			}
 		})
 	}
+
 }
+
 
 func TestEmail(t *testing.T) {
 
@@ -223,6 +231,7 @@ func TestEmail(t *testing.T) {
 	assert.True(t, emailRx.MatchString(validEmail))
 
 }
+
 
 func TestUsersApplication(t *testing.T) {
 	t.Parallel()

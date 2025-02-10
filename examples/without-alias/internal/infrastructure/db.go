@@ -7,8 +7,9 @@ import (
 	"time"
 
 	_ "github.com/joho/godotenv/autoload"
-
+	
 	_ "github.com/lib/pq"
+	
 )
 
 const (
@@ -27,6 +28,10 @@ var (
 
 	instance *sql.DB
 )
+
+
+
+
 
 func Postgres() (*sql.DB, error) {
 	if instance != nil {
@@ -77,6 +82,10 @@ func Postgres() (*sql.DB, error) {
 		conn.SetConnMaxLifetime(defaultConnMaxLifetime)
 	}
 
+
 	instance = conn
 	return instance, nil
 }
+
+
+

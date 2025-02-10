@@ -39,7 +39,7 @@ func (tc *UsersController) FindUsersH(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (tc *UsersController) CreateUsersH(w http.ResponseWriter, r *http.Request) {
+func (tc *UsersController) CreateUserH(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), tc.ContextTime())
 	defer cancel()
 
@@ -60,7 +60,7 @@ func (tc *UsersController) CreateUsersH(w http.ResponseWriter, r *http.Request) 
 	})
 }
 
-func (tc *UsersController) GetUsersH(w http.ResponseWriter, r *http.Request) {
+func (tc *UsersController) GetUserH(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), tc.ContextTime())
 	defer cancel()
 
@@ -111,7 +111,7 @@ func (tc *UsersController) PatchUserH(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (tc *UsersController) DeleteUsersH(w http.ResponseWriter, r *http.Request) {
+func (tc *UsersController) DeleteUserH(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), tc.ContextTime())
 	defer cancel()
 
@@ -133,6 +133,7 @@ func (tc *UsersController) DeleteUsersH(w http.ResponseWriter, r *http.Request) 
 		Message: "deleted successfully",
 	})
 }
+
 
 func (tc *UsersController) handleError(w http.ResponseWriter, r *http.Request, err error) {
 	switch {

@@ -42,7 +42,7 @@ LIMIT
 	1
 `
 
-func (t Sqlite3Repository) GetUser(ctx context.Context, arg *dtos.GetUserParams) (user *dtos.User, err error) {
+func (t *Sqlite3Repository) GetUser(ctx context.Context, arg *dtos.GetUserParams) (user *dtos.User, err error) {
 	if arg.ID <= 0 {
 		return nil, lib.ErrNoRecord
 	}
@@ -68,6 +68,7 @@ func (t Sqlite3Repository) GetUser(ctx context.Context, arg *dtos.GetUserParams)
 	return user, nil
 }
 
+
 const getUserByEmailStmt = `
 SELECT
 	id,
@@ -84,7 +85,7 @@ LIMIT
 	1
 `
 
-func (t Sqlite3Repository) GetUserByEmail(ctx context.Context, arg *dtos.GetUserParams) (user *dtos.User, err error) {
+func (t *Sqlite3Repository) GetUserByEmail(ctx context.Context, arg *dtos.GetUserParams) (user *dtos.User, err error) {
 	if arg.Email == "" {
 		return nil, lib.ErrNoRecord
 	}
@@ -110,6 +111,7 @@ func (t Sqlite3Repository) GetUserByEmail(ctx context.Context, arg *dtos.GetUser
 	return user, nil
 }
 
+
 const listUsersStmt = `
 SELECT
 	id,
@@ -121,7 +123,7 @@ FROM
 	users
 `
 
-func (t Sqlite3Repository) FindUsers(ctx context.Context, arg *dtos.FindUsersParams) (users []*dtos.User, err error) {
+func (t *Sqlite3Repository) FindUsers(ctx context.Context, arg *dtos.FindUsersParams) (users []*dtos.User, err error) {
 	rows, err := t.db.QueryContext(ctx, listUsersStmt)
 	if err != nil {
 		t.logger.Error("unable to query rows", "FindUsers", err)
@@ -160,7 +162,7 @@ const createUserStmt = `INSERT INTO
 VALUES
 	(?, ?, ?) RETURNING id`
 
-func (t Sqlite3Repository) CreateUser(ctx context.Context, arg *dtos.CreateUserParams) (id int64, err error) {
+func (t *Sqlite3Repository) CreateUser(ctx context.Context, arg *dtos.CreateUserParams) (id int64, err error) {
 	row := t.db.QueryRowContext(ctx, createUserStmt, arg.Username, arg.Email, arg.Password)
 	err = row.Scan(&id)
 	if err != nil {
@@ -188,7 +190,7 @@ WHERE
 	id = ?
 `
 
-func (t Sqlite3Repository) UpdateUser(ctx context.Context, arg *dtos.UpdateUserParams) error {
+func (t *Sqlite3Repository) UpdateUser(ctx context.Context, arg *dtos.UpdateUserParams) error {
 	if arg.ID <= 0 {
 		return lib.ErrNoRecord
 	}
@@ -203,7 +205,7 @@ WHERE
 	id = ?
 `
 
-func (t Sqlite3Repository) DeleteUser(ctx context.Context, arg *dtos.DeleteUserParams) error {
+func (t *Sqlite3Repository) DeleteUser(ctx context.Context, arg *dtos.DeleteUserParams) error {
 	if arg.ID <= 0 {
 		return lib.ErrNoRecord
 	}

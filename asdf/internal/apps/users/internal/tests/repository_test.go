@@ -19,7 +19,7 @@ func createValidUser(t *testing.T) *dtos.CreateUserParams {
 	return &dtos.CreateUserParams{
 		Username: randomUsername(),
 		Email:    randomEmail(),
-		Password: "adsfi9he",
+		Password: randString(8),
 	}
 }
 
@@ -365,6 +365,7 @@ func TestUsersRepository_SQLInjection(t *testing.T) {
 	assert.Nilf(t, err, "want nil, got: '%v'", err)
 
 	// anticipating to delete the table with injected sql
+	
 	userByEmail, err := repo.GetUserByEmail(ctx, &dtos.GetUserParams{
 		Email: maliciousInput,
 	})
@@ -375,4 +376,5 @@ func TestUsersRepository_SQLInjection(t *testing.T) {
 		Email: maliciousInput,
 	})
 	assert.Nilf(t, err, "want nil, got '%v', user: '%v'", userByEmail, err)
+	
 }

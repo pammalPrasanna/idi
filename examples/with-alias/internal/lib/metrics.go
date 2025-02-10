@@ -9,19 +9,11 @@ type metricsResponseWriter struct {
 	wrapped       http.ResponseWriter
 }
 
-var mrw *metricsResponseWriter
-
 func newMetricsResponseWriter(w http.ResponseWriter) *metricsResponseWriter {
-	if mrw != nil {
-		return mrw
-	}
-
-	mrw = &metricsResponseWriter{
+	return &metricsResponseWriter{
 		StatusCode: http.StatusOK,
 		wrapped:    w,
 	}
-
-	return mrw
 }
 
 func (mw *metricsResponseWriter) Header() http.Header {
