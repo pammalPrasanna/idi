@@ -86,13 +86,13 @@ func (t *{{ capitalize .AppName }}) Update{{ capitalize (trimS .AppName) }}(ctx 
 		return v.Errors()
 	}
 
-	user, err := t.Repo.Get{{capitalize (trimS .AppName)}}(ctx, &dtos.Get{{capitalize (trimS .AppName)}}Params{ID: arg.ID})
+	{{trimS .AppName}}, err := t.Repo.Get{{capitalize (trimS .AppName)}}(ctx, &dtos.Get{{capitalize (trimS .AppName)}}Params{ID: arg.ID})
 	if err != nil {
 		return err
 	}
 
 	if arg.Username == nil {
-		arg.Username = &user.Username
+		arg.Username = &{{trimS .AppName}}.Username
 	}
 	{{if eq .AppName "users"}}
 	if arg.Email == nil {

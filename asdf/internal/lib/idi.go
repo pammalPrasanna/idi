@@ -2,6 +2,7 @@ package lib
 
 import (
 	"database/sql"
+	"errors"
 	"net/http"
 	"time"
 
@@ -12,29 +13,32 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-type idi struct {
-	*config
+type (
+	option func(*idi) error
+	idi    struct {
+		*config
 
-	// rest.go
-	logger *slogLogger
+		// rest.go
+		logger *slogLogger
 
-	// server.go
-	router *httprouter.Router
-	server *http.Server
+		// server.go
+		router *httprouter.Router
+		server *http.Server
 
-	sqlite3 *sql.DB
+		sqlite3 *sql.DB
 
-	// auth
-	customGetUserByID func(id int) (*IUser, error)
-	auth.IAuth
-}
+		// auth
+		customGetUserByID func(id int) (*IUser, error)
+		auth.IAuth
+	}
+)
 
 var (
 	_    IApp = (*idi)(nil)
 	_idi *idi
 )
 
-func Idi() (*idi, error) {
+func Idi(opts ...option) (*idi, error) {
 	if _idi != nil {
 		return _idi, nil
 	}
@@ -50,12 +54,20 @@ func Idi() (*idi, error) {
 	_idi.logger = newLogger(nil)
 	_idi.router = httprouter.New()
 
-	// open DB connection(s)
-	conn, err := infra.Sqlite3()
-	if err != nil {
-		return nil, err
+	for _, opt := range opts {
+		err := opt(_idi)
+		if err != nil {
+			return nil, err
+		}
 	}
-	_idi.sqlite3 = conn
+	// open DB connection(s) if not set WithDBConn
+	if _idi.sqlite3 == nil {
+		conn, err := infra.Sqlite3()
+		if err != nil {
+			return nil, err
+		}
+		_idi.sqlite3 = conn
+	}
 
 	paseto, err := auth.NewPasetoMaker(_idi.tokenExpiration, _idi.symmetricKey, _idi.baseURL)
 	if err != nil {
@@ -79,6 +91,16 @@ func Idi() (*idi, error) {
 	_idi.router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
 
 	return _idi, nil
+}
+
+func WithDBConn(dbConn *sql.DB) option {
+	return func(i *idi) error {
+		if dbConn == nil {
+			return errors.New("database connection cannot be nil")
+		}
+		i.sqlite3 = dbConn
+		return nil
+	}
 }
 
 func (i *idi) Sqlite3() *sql.DB {

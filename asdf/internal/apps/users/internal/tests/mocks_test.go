@@ -247,15 +247,15 @@ func (mr *MockIAppMockRecorder) AuthenticationRequired(w, r interface{}) *gomock
 }
 
 // BadRequest mocks base method.
-func (m *MockIApp) BadRequest(w http.ResponseWriter, r *http.Request, err error) {
+func (m *MockIApp) BadRequest(w http.ResponseWriter, r *http.Request, data any) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "BadRequest", w, r, err)
+	m.ctrl.Call(m, "BadRequest", w, r, data)
 }
 
 // BadRequest indicates an expected call of BadRequest.
-func (mr *MockIAppMockRecorder) BadRequest(w, r, err interface{}) *gomock.Call {
+func (mr *MockIAppMockRecorder) BadRequest(w, r, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BadRequest", reflect.TypeOf((*MockIApp)(nil).BadRequest), w, r, err)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BadRequest", reflect.TypeOf((*MockIApp)(nil).BadRequest), w, r, data)
 }
 
 // CompareHashAndPassword mocks base method.

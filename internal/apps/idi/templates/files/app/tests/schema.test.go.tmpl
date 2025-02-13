@@ -59,10 +59,10 @@ const patch{{capitalize (trimS .AppName)}}Schema200 string = `
   ]
 }`
 
-const {{trimS .AppName}}ValidationSchema422 string = `
+const {{trimS .AppName}}Schema422 string = `
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "{{trimS .AppName}}ValidationSchema422",
+  "title": "{{trimS .AppName}}Schema422",
   "type": "object",
   "properties": {
     "errors": {
@@ -104,10 +104,10 @@ const {{trimS .AppName}}ValidationSchema422 string = `
 }
 `
 
-const schema201 string = `
+const post{{capitalize (trimS .AppName)}}Schema201 string = `
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "schema201",
+  "title": "post{{trimS .AppName}}Schema201",
   "type": "object",
   "properties": {
     "{{trimS .AppName}}_id": {
@@ -121,10 +121,10 @@ const schema201 string = `
 }
 `
 
-const schema400 string = `
+const {{trimS .AppName}}Schema400 string = `
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "schema400",
+  "title": "{{trimS .AppName}}Schema400",
   "type": "object",
   "properties": {
     "error": {
@@ -138,7 +138,7 @@ const schema400 string = `
 }
 `
 
-const schemaInvalidID422 string = `
+const {{trimS .AppName}}SchemaInvalidID422 string = `
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "schema422",
@@ -155,10 +155,10 @@ const schemaInvalidID422 string = `
 }
 `
 
-const schema404 string = `
+const {{trimS .AppName}}Schema404 string = `
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "schema404",
+  "title": "{{trimS .AppName}}Schema404",
   "type": "object",
   "properties": {
     "error": {
@@ -213,10 +213,10 @@ const get{{capitalize (trimS .AppName)}}Schema200 string = `{
   ]
 }`
 
-const schema500 string = `
+const {{trimS .AppName}}Schema500 string = `
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "schema500",
+  "title": "{{trimS .AppName}}Schema500",
   "type": "object",
   "properties": {
     "error": {

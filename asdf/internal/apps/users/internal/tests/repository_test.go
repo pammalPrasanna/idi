@@ -17,7 +17,7 @@ func createValidUser(t *testing.T) *dtos.CreateUserParams {
 	t.Helper()
 
 	return &dtos.CreateUserParams{
-		Username: randomUsername(),
+		Username: randString(5),
 		Email:    randomEmail(),
 		Password: randString(8),
 	}
@@ -29,6 +29,7 @@ func TestUsersRepository_CRUD(t *testing.T) {
 		t.Errorf("skipping tests | INTEGRATION_TESTS = '%v'", INTEGRATION_TESTS)
 		t.FailNow()
 	}
+
 	assert.NotNil(t, dbConn, "db connection is nil")
 
 	ctrl := gomock.NewController(t)
@@ -105,7 +106,7 @@ func TestUsersRepository_CRUD(t *testing.T) {
 
 		updatedUser := &dtos.UpdateUserParams{
 			ID:       id,
-			Username: addrOfStr(randomUsername()),
+			Username: addrOfStr(randString(5)),
 			Email:    addrOfStr(randomEmail()),
 		}
 
@@ -365,7 +366,7 @@ func TestUsersRepository_SQLInjection(t *testing.T) {
 	assert.Nilf(t, err, "want nil, got: '%v'", err)
 
 	// anticipating to delete the table with injected sql
-	
+
 	userByEmail, err := repo.GetUserByEmail(ctx, &dtos.GetUserParams{
 		Email: maliciousInput,
 	})
@@ -376,5 +377,4 @@ func TestUsersRepository_SQLInjection(t *testing.T) {
 		Email: maliciousInput,
 	})
 	assert.Nilf(t, err, "want nil, got '%v', user: '%v'", userByEmail, err)
-	
 }

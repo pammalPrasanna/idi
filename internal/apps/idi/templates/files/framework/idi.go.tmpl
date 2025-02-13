@@ -2,6 +2,7 @@ package lib
 
 import (
 	"database/sql"
+	"errors"
 	"net/http"
 	"time"
 
@@ -12,30 +13,34 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-type {{.Alias}} struct {
-	*config
+type (
+	option func(*idi) error
 
-	// rest.go
-	logger *slogLogger
+	{{.Alias}} struct {
+		*config
 
-	// server.go
-	router *httprouter.Router
-	server *http.Server
+		// rest.go
+		logger *slogLogger
+
+		// server.go
+		router *httprouter.Router
+		server *http.Server
 
 
-	{{.DBName}} *sql.DB
+		{{.DBName}} *sql.DB
 
-	// auth
-	customGetUserByID func(id int) (*IUser, error)
-	{{if .IsAuth}}auth.IAuth{{end}}
-}
+		// auth
+		customGetUserByID func(id int) (*IUser, error)
+		{{if .IsAuth}}auth.IAuth{{end}}
+	}
+)
 
 var (
 	_ IApp = (*{{.Alias}})(nil)
 	_{{.Alias}} *{{.Alias}}
 )
 
-func {{capitalize .Alias}}() (*{{.Alias}}, error) {
+func {{capitalize .Alias}}(opts ...option) (*{{.Alias}}, error) {
 	if _{{.Alias}} != nil {
 		return _{{.Alias}}, nil
 	}
@@ -51,13 +56,22 @@ func {{capitalize .Alias}}() (*{{.Alias}}, error) {
 	_{{.Alias}}.logger = newLogger(nil)
 	_{{.Alias}}.router = httprouter.New()
 
-{{if (ne .DBName "")}}
-	// open DB connection(s)
-	conn, err := infra.{{capitalize .DBName}}()
-	if err != nil {
-		return nil, err
+
+	for _, opt := range opts {
+		err := opt(_idi)
+		if err != nil {
+			return nil, err
+		}
 	}
-	_{{.Alias}}.{{.DBName}} = conn
+{{if (ne .DBName "")}}
+	// open DB connection(s) if not set WithDBConn
+	if _idi.{{.DBName}} == nil {
+		conn, err := infra.{{capitalize .DBName}}()
+		if err != nil {
+			return nil, err
+		}
+		_{{.Alias}}.{{.DBName}} = conn
+	}
 {{end}}
 {{if .IsAuth}}
 	{{if .IsPaseto}}
@@ -90,6 +104,16 @@ func {{capitalize .Alias}}() (*{{.Alias}}, error) {
 	_{{.Alias}}.router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
 
 	return _{{.Alias}}, nil
+}
+
+func WithDBConn(dbConn *sql.DB) option {
+	return func(i *idi) error {
+		if dbConn == nil {
+			return errors.New("database connection cannot be nil")
+		}
+		i.sqlite3 = dbConn
+		return nil
+	}
 }
 
 {{if (ne .DBName "")}}
