@@ -24,7 +24,7 @@ type (
 	UpdateUserParams struct {
 		Username *string `json:"username"`
 		Email    *string `json:"email"`
-		ID       int64  `json:"id"`
+		ID       int64   `json:"id"`
 	}
 	DeleteUserParams struct {
 		ID int64

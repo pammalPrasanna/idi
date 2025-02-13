@@ -24,9 +24,14 @@ func Main() error {
 	alias := flag.String("a", "idi", "change root app name with flag: idi -alias 'myRootApp'")
 	showVersion := flag.Bool("v", false, "display version and exit")
 	flag.Parse()
+
 	if *showVersion {
 		fmt.Printf("version: %s\n", utils.Version())
 		return nil
+	}
+
+	if err := InterruptCase1(*dbName, *appNames, *projectName); err != nil {
+		return err
 	}
 
 	idi, err := idi.New(*projectName, *appNames, *dbName, *routerName, *alias, *isAuth, *isPaseto)

@@ -38,6 +38,9 @@ func (e ErrNotUnique) Error() string {
 		sp := strings.Split(e.Msg, ".")
 		e.field = sp[len(sp)-1]
 	}
+	if strings.Contains(e.field, "_") {
+		e.field = strings.Join(strings.Split(e.field, "_"), " ")
+	}
 	return e.field + " already exists"
 }
 

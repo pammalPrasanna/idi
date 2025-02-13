@@ -49,6 +49,8 @@ func (tc *UsersController) CreateUserH(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	tc.Logger().Error("cup", args)
+
 	id, err := tc.app.CreateUser(ctx, args)
 	if err != nil {
 		tc.handleError(w, r, err)
@@ -133,7 +135,6 @@ func (tc *UsersController) DeleteUserH(w http.ResponseWriter, r *http.Request) {
 		Message: "deleted successfully",
 	})
 }
-
 
 func (tc *UsersController) handleError(w http.ResponseWriter, r *http.Request, err error) {
 	switch {

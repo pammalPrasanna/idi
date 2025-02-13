@@ -19,7 +19,3 @@ func randString(length int) string {
 func randomEmail() string {
 	return randString(5) + "@email.com"
 }
-
-func randomUsername() string {
-	return randString(6)
-}

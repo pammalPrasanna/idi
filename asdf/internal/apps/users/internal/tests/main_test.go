@@ -19,7 +19,9 @@ var (
 	INTEGRATION_TESTS bool
 )
 
-func setupTestDB(m *testing.M) (int, error) {
+const dbfile string = "testdb.db"
+
+func setupTest(m *testing.M) (int, error) {
 	if os.Getenv("INTEGRATION_TESTS") != "true" {
 		INTEGRATION_TESTS = false
 		fmt.Println("skipping database setup")
@@ -30,23 +32,25 @@ func setupTestDB(m *testing.M) (int, error) {
 
 	var err error
 
-	if err := os.Remove(dbfile); err != nil {
-		log.Printf("unable to delete testdb with error: %s", err)
-	}
-	conn, err := Sqlite3Test()
+	conn, err := Sqlite3Test(dbfile)
 	if err != nil {
 		return -1, err
 	}
 
 	cmd := exec.Command("goose",
-		"-s", "-dir=../../../../../migrations", "sqlite3", "testdb.db", "up",
+		"-s", "-dir=../../../../../migrations", "sqlite3", dbfile, "up",
 	)
-
 	if err := cmd.Run(); err != nil {
-		log.Printf("unable to run migrations with error: %s", err)
+		log.Printf("unable to migrate up with error: %s", err)
 	}
 
-	dbConn = conn
+	ra, err := lib.Idi(lib.WithDBConn(conn))
+	if err != nil {
+		log.Printf("unable to create root app: %s", err)
+		os.Exit(-1)
+	}
+	rootApp = ra
+	dbConn = rootApp.Sqlite3()
 
 	defer func() {
 		if err := dbConn.Close(); err != nil {
@@ -60,15 +64,26 @@ func setupTestDB(m *testing.M) (int, error) {
 	return m.Run(), nil
 }
 
+// func TestMain(m *testing.M) {
+// 	godotenv.Load("../../../../../.env")
+// 	ra, err := lib.Idi()
+// 	if err != nil {
+// 		log.Printf("unable to create root app: %s", err)
+// 		os.Exit(-1)
+// 	}
+// 	rootApp = ra
+// 	code, err := setupTestDB(m)
+
+// 	if err != nil {
+// 		log.Printf("unable to create test db connection: %s", err)
+// 	}
+// 	os.Exit(code)
+// }
+
 func TestMain(m *testing.M) {
 	godotenv.Load("../../../../../.env")
-	ra, err := lib.Idi()
-	if err != nil {
-		log.Printf("unable to create root app: %s", err)
-		os.Exit(-1)
-	}
-	rootApp = ra
-	code, err := setupTestDB(m)
+
+	code, err := setupTest(m)
 	if err != nil {
 		log.Printf("unable to create test db connection: %s", err)
 	}

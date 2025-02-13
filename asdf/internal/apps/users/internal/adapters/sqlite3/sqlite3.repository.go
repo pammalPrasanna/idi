@@ -68,7 +68,6 @@ func (t *Sqlite3Repository) GetUser(ctx context.Context, arg *dtos.GetUserParams
 	return user, nil
 }
 
-
 const getUserByEmailStmt = `
 SELECT
 	id,
@@ -110,7 +109,6 @@ func (t *Sqlite3Repository) GetUserByEmail(ctx context.Context, arg *dtos.GetUse
 	}
 	return user, nil
 }
-
 
 const listUsersStmt = `
 SELECT
@@ -171,7 +169,6 @@ func (t *Sqlite3Repository) CreateUser(ctx context.Context, arg *dtos.CreateUser
 			return -1, lib.ErrNotUnique{
 				Msg: err.Error(),
 			}
-
 		default:
 			return -1, err
 		}

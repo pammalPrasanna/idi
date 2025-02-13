@@ -27,13 +27,11 @@ var (
 	instance *sql.DB
 )
 
-const dbfile string = "testdb.db"
-
-func Sqlite3Test() (*sql.DB, error) {
+func Sqlite3Test(dsn string) (*sql.DB, error) {
 	if instance != nil {
 		return instance, nil
 	}
-	conn, err := sql.Open("sqlite3", dbfile)
+	conn, err := sql.Open("sqlite3", dsn)
 	if err != nil {
 		return nil, err
 	}

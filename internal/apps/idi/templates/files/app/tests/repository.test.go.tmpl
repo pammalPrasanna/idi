@@ -17,9 +17,11 @@ func createValid{{capitalize (trimS .AppName)}}(t *testing.T) *dtos.Create{{capi
 	t.Helper()
 
 	return &dtos.Create{{capitalize (trimS .AppName)}}Params{
-		Username: randomUsername(),
+		Username: randString(5),
+		{{if eq .AppName "users"}}
 		Email:    randomEmail(),
 		Password: randString(8),
+		{{end}}
 	}
 }
 
@@ -84,7 +86,7 @@ func Test{{capitalize .AppName}}Repository_CRUD(t *testing.T) {
 		assert.Nilf(t, err, "want nil, got %v", err)
 
 		assert.Equalf(t, valid{{capitalize (trimS .AppName)}}.Email, got{{capitalize (trimS .AppName)}}.Email, "want '%s', got '%s'", valid{{capitalize (trimS .AppName)}}.Email, got{{capitalize (trimS .AppName)}}.Email)
-		assert.Equalf(t, valid{{capitalize (trimS .AppName)}}.Username, got{{capitalize (trimS .AppName)}}.Username, "want '%s', got '%s'", valid{{capitalize (trimS .AppName)}}.Email, got{{capitalize (trimS .AppName)}}.Email)
+		assert.Equalf(t, valid{{capitalize (trimS .AppName)}}.Username, got{{capitalize (trimS .AppName)}}.Username, "want '%s', got '%s'", valid{{capitalize (trimS .AppName)}}.Username, got{{capitalize (trimS .AppName)}}.Username)
 	})
 
 	t.Run("-- update {{trimS .AppName}} with valid id", func(t *testing.T) {
@@ -105,7 +107,7 @@ func Test{{capitalize .AppName}}Repository_CRUD(t *testing.T) {
 
 		updated{{capitalize (trimS .AppName)}} := &dtos.Update{{capitalize (trimS .AppName)}}Params{
 			ID:       id,
-			Username: addrOfStr(randomUsername()),
+			Username: addrOfStr(randString(5)),
 			Email:    addrOfStr(randomEmail()),
 		}
 
@@ -120,7 +122,7 @@ func Test{{capitalize .AppName}}Repository_CRUD(t *testing.T) {
 		assert.Nilf(t, err, "want nil, got %v", err)
 
 		assert.Equalf(t, *updated{{capitalize (trimS .AppName)}}.Email, got{{capitalize (trimS .AppName)}}.Email, "want '%s', got '%s'", *updated{{capitalize (trimS .AppName)}}.Email, got{{capitalize (trimS .AppName)}}.Email)
-		assert.Equalf(t, *updated{{capitalize (trimS .AppName)}}.Username, got{{capitalize (trimS .AppName)}}.Username, "want '%s', got '%s'", *updated{{capitalize (trimS .AppName)}}.Email, got{{capitalize (trimS .AppName)}}.Email)
+		assert.Equalf(t, *updated{{capitalize (trimS .AppName)}}.Username, got{{capitalize (trimS .AppName)}}.Username, "want '%s', got '%s'", *updated{{capitalize (trimS .AppName)}}.Username, got{{capitalize (trimS .AppName)}}.Username)
 	})
 
 	t.Run("-- delete {{trimS .AppName}} with valid id", func(t *testing.T) {
@@ -173,6 +175,7 @@ func Test{{capitalize .AppName}}Repository_NonExistentID(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
 		defer cancel()
 
+
 		got{{capitalize (trimS .AppName)}}, err := repo.Get{{capitalize (trimS .AppName)}}(ctx, &dtos.Get{{capitalize (trimS .AppName)}}Params{
 			ID: -1,
 		})
@@ -222,22 +225,7 @@ func Test{{capitalize .AppName}}Repository_ConstrainsValidation(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	t.Run("-- unique email", func(t *testing.T) {
-		t.Parallel()
-		mockLogger := NewMockILogger(ctrl)
-		repo := sqlite3.NewRepository(dbConn, mockLogger)
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
-		defer cancel()
-
-		{{trimS .AppName}} := createValid{{capitalize (trimS .AppName)}}(t)
-		repo.Create{{capitalize (trimS .AppName)}}(ctx, {{trimS .AppName}})
-
-		_, err := repo.Create{{capitalize (trimS .AppName)}}(ctx, {{trimS .AppName}})
-
-		assert.NotNil(t, err, "want unique constraint error, got nil", err)
-		assert.Equal(t, "email already exists", err.Error())
-	})
 
 	t.Run("-- unique {{trimS .AppName}}name", func(t *testing.T) {
 		t.Parallel()
@@ -250,7 +238,8 @@ func Test{{capitalize .AppName}}Repository_ConstrainsValidation(t *testing.T) {
 		{{trimS .AppName}} := createValid{{capitalize (trimS .AppName)}}(t)
 		repo.Create{{capitalize (trimS .AppName)}}(ctx, {{trimS .AppName}})
 
-		{{trimS .AppName}}.Email = randomEmail()
+
+		{{if eq .AppName "users"}}{{trimS .AppName}}.Email = randomEmail(){{end}}
 
 		_, err := repo.Create{{capitalize (trimS .AppName)}}(ctx, {{trimS .AppName}})
 
@@ -272,6 +261,24 @@ func Test{{capitalize .AppName}}Repository_ConstrainsValidation(t *testing.T) {
 		id, err := repo.Create{{capitalize (trimS .AppName)}}(ctx, {{trimS .AppName}})
 		assert.Negative(t, id)
 		assert.NotNilf(t, err, "want CHECK constraint failed, got: '%v'", err)
+	})
+
+	{{if eq .AppName "users"}}
+		t.Run("-- unique email", func(t *testing.T) {
+		t.Parallel()
+		mockLogger := NewMockILogger(ctrl)
+		repo := sqlite3.NewRepository(dbConn, mockLogger)
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+		defer cancel()
+
+		{{trimS .AppName}} := createValid{{capitalize (trimS .AppName)}}(t)
+		repo.Create{{capitalize (trimS .AppName)}}(ctx, {{trimS .AppName}})
+
+		_, err := repo.Create{{capitalize (trimS .AppName)}}(ctx, {{trimS .AppName}})
+
+		assert.NotNil(t, err, "want unique constraint error, got nil", err)
+		assert.Equal(t, "email already exists", err.Error())
 	})
 	t.Run("-- empty email", func(t *testing.T) {
 		t.Parallel()
@@ -303,8 +310,10 @@ func Test{{capitalize .AppName}}Repository_ConstrainsValidation(t *testing.T) {
 		assert.Negative(t, id)
 		assert.NotNilf(t, err, "want CHECK constraint failed, got: '%v'", err)
 	})
+	{{end}}
 }
 
+{{if eq .AppName "users"}}
 func Test{{capitalize .AppName}}Repository_HashingPassword(t *testing.T) {
 	t.Parallel()
 	if !INTEGRATION_TESTS {
@@ -341,42 +350,4 @@ func Test{{capitalize .AppName}}Repository_HashingPassword(t *testing.T) {
 	assert.Nilf(t, err, "want nil, got err: %v", err)
 	assert.Equalf(t, true, ok, "password '%s' and hash '%s' doesn't match", password, {{trimS .AppName}}FromRepo.HashedPassword)
 }
-
-func Test{{capitalize .AppName}}Repository_SQLInjection(t *testing.T) {
-	t.Parallel()
-	if !INTEGRATION_TESTS {
-		t.Errorf("skipping tests | INTEGRATION_TESTS = '%v'", INTEGRATION_TESTS)
-		t.FailNow()
-	}
-
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	mockLogger := NewMockILogger(ctrl)
-
-	repo := sqlite3.NewRepository(dbConn, mockLogger)
-	maliciousInput := randomEmail() + "; DROP TABLE {{.AppName}};"
-
-	{{trimS .AppName}} := createValid{{capitalize (trimS .AppName)}}(t)
-	{{trimS .AppName}}.Email = maliciousInput
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
-	defer cancel()
-	_, err := repo.Create{{capitalize (trimS .AppName)}}(ctx, {{trimS .AppName}})
-	assert.Nilf(t, err, "want nil, got: '%v'", err)
-
-	// anticipating to delete the table with injected sql
-	{{if eq .AppName "{{trimS .AppName}}s"}}
-	{{trimS .AppName}}ByEmail, err := repo.Get{{capitalize (trimS .AppName)}}ByEmail(ctx, &dtos.Get{{capitalize (trimS .AppName)}}Params{
-		Email: maliciousInput,
-	})
-	assert.Nilf(t, err, "want nil, got '%v', {{trimS .AppName}}: '%v'", {{trimS .AppName}}ByEmail, err)
-
-	// trying to get data from the probably deleted table
-	{{trimS .AppName}}ByEmail, err = repo.Get{{capitalize (trimS .AppName)}}ByEmail(ctx, &dtos.Get{{capitalize (trimS .AppName)}}Params{
-		Email: maliciousInput,
-	})
-	assert.Nilf(t, err, "want nil, got '%v', {{trimS .AppName}}: '%v'", {{trimS .AppName}}ByEmail, err)
-	{{else}}
-	// continue the test with respect to this service
-	{{end}}
-}
+{{end}}

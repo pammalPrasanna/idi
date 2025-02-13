@@ -25,8 +25,6 @@ func validateSchema(t *testing.T, schema string, resp []byte) {
 	}
 }
 
-
-
 const deleteUserSchema200 string = `
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
@@ -176,7 +174,8 @@ const getUserSchema200 string = `{
       "type": "object",
       "properties": {
         "id": {
-          "type": "number"
+          "type": "number",
+          "minimum": 1
         },
         "username": {
           "type": "string"

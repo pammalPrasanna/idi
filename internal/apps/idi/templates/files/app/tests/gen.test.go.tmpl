@@ -63,7 +63,7 @@ type (
 		SetUserByIDMethod(fn func(id int) (*lib.IUser, error))
 	{{end}}
 		// rest helpers
-		BadRequest(w http.ResponseWriter, r *http.Request, err error)         // 400
+		BadRequest(w http.ResponseWriter, r *http.Request, data any)         // 400
 		AuthenticationRequired(w http.ResponseWriter, r *http.Request)        // 401
 		InvalidAuthenticationToken(w http.ResponseWriter, r *http.Request)    // 401
 		NotFound(w http.ResponseWriter, r *http.Request)                      // 404

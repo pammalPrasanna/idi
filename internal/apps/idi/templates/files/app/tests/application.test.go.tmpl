@@ -127,7 +127,7 @@ func Test{{capitalize .AppName}}Domain(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := NewMockI{{capitalize .AppName}}Repository(ctrl)
-	usersApp := application.New(rootApp, mockRepo)
+	{{.AppName}}App := application.New(rootApp, mockRepo)
 	mockRepo.EXPECT().Create{{capitalize (trimS .AppName)}}(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
 
 	for _, v := range createUsernameTests(t) {
@@ -139,7 +139,7 @@ func Test{{capitalize .AppName}}Domain(t *testing.T) {
 			{{trimS .AppName}} := createValid{{capitalize (trimS .AppName)}}(t)
 			{{trimS .AppName}}.Username = randString(v.length)
 
-			id, err := usersApp.Create{{capitalize (trimS .AppName)}}(ctx, {{trimS .AppName}})
+			id, err := {{.AppName}}App.Create{{capitalize (trimS .AppName)}}(ctx, {{trimS .AppName}})
 
 			if !v.allowLength {
 
@@ -169,7 +169,7 @@ func Test{{capitalize .AppName}}Domain(t *testing.T) {
 		{{trimS .AppName}} := createValid{{capitalize (trimS .AppName)}}(t)
 		{{trimS .AppName}}.Email = "invalidEmail"
 
-		id, err := usersApp.Create{{capitalize (trimS .AppName)}}(ctx, {{trimS .AppName}})
+		id, err := {{.AppName}}App.Create{{capitalize (trimS .AppName)}}(ctx, {{trimS .AppName}})
 
 		assert.Negativef(t, id, "want -1 got %d", id)
 		assert.ErrorAsf(t, err, &lib.ErrInvalidData{}, "want ErrInvalidData, got %v", err)
@@ -192,7 +192,7 @@ func Test{{capitalize .AppName}}Domain(t *testing.T) {
 			{{trimS .AppName}} := createValid{{capitalize (trimS .AppName)}}(t)
 			{{trimS .AppName}}.Password = randString(v.length)
 
-			id, err := usersApp.Create{{capitalize (trimS .AppName)}}(ctx, {{trimS .AppName}})
+			id, err := {{.AppName}}App.Create{{capitalize (trimS .AppName)}}(ctx, {{trimS .AppName}})
 
 			if !v.allowLength {
 				assert.Negativef(t, id, "want -1 got %d", id)
@@ -246,58 +246,60 @@ func Test{{capitalize .AppName}}Application(t *testing.T) {
 
 	mockLogger := NewMockILogger(ctrl)
 	repo := sqlite3.NewRepository(dbConn, mockLogger)
-	usersApp := application.New(rootApp, repo)
+	{{.AppName}}App := application.New(rootApp, repo)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
 	// create {{trimS .AppName}}
 	tu := createValid{{capitalize (trimS .AppName)}}(t)
-	id, err := usersApp.Create{{capitalize (trimS .AppName)}}(ctx, tu)
-	assert.Nilf(t, err, "email used %s", tu.Email)
+	id, err := {{.AppName}}App.Create{{capitalize (trimS .AppName)}}(ctx, tu)
+	assert.Nil(t, err)
 	assert.GreaterOrEqual(t, id, int64(1))
 
 	// get all {{trimS .AppName}}
-	{{trimS .AppName}}, err := usersApp.Find{{capitalize .AppName}}(ctx, &dtos.Find{{capitalize .AppName}}Params{})
+	{{trimS .AppName}}, err := {{.AppName}}App.Find{{capitalize .AppName}}(ctx, &dtos.Find{{capitalize .AppName}}Params{})
 	assert.Nil(t, err)
 	assert.NotNil(t, {{trimS .AppName}})
 	assert.GreaterOrEqual(t, len({{trimS .AppName}}), 0)
 
 	// get created  {{trimS .AppName}}
-	got{{capitalize (trimS .AppName)}}1, err := usersApp.Get{{capitalize (trimS .AppName)}}(ctx, &dtos.Get{{capitalize (trimS .AppName)}}Params{ID: id})
+	got{{capitalize (trimS .AppName)}}1, err := {{.AppName}}App.Get{{capitalize (trimS .AppName)}}(ctx, &dtos.Get{{capitalize (trimS .AppName)}}Params{ID: id})
 	assert.Nil(t, err)
 	assert.NotNil(t, got{{capitalize (trimS .AppName)}}1)
 
 	// update {{trimS .AppName}}'s username
 	updated{{capitalize (trimS .AppName)}}1 := &dtos.Update{{capitalize (trimS .AppName)}}Params{
 		ID:       id,
-		Username: addrOfStr(randomUsername()),
+		Username: addrOfStr(randString(6)),
 	}
-	err = usersApp.Update{{capitalize (trimS .AppName)}}(ctx, updated{{capitalize (trimS .AppName)}}1)
+	err = {{.AppName}}App.Update{{capitalize (trimS .AppName)}}(ctx, updated{{capitalize (trimS .AppName)}}1)
 	assert.Nil(t, err)
 
 	// verify update username
-	got{{capitalize (trimS .AppName)}}2, err := usersApp.Get{{capitalize (trimS .AppName)}}(ctx, &dtos.Get{{capitalize (trimS .AppName)}}Params{ID: id})
+	got{{capitalize (trimS .AppName)}}2, err := {{.AppName}}App.Get{{capitalize (trimS .AppName)}}(ctx, &dtos.Get{{capitalize (trimS .AppName)}}Params{ID: id})
 	assert.Nil(t, err)
 	assert.NotNil(t, got{{capitalize (trimS .AppName)}}2)
 	assert.Equal(t, *updated{{capitalize (trimS .AppName)}}1.Username, got{{capitalize (trimS .AppName)}}2.Username)
 
+	{{if eq .AppName "users"}}
 	// update {{trimS .AppName}}'s email
 	updated{{capitalize (trimS .AppName)}}2 := &dtos.Update{{capitalize (trimS .AppName)}}Params{
 		ID:    id,
 		Email: addrOfStr(randomEmail()),
 	}
-	err = usersApp.Update{{capitalize (trimS .AppName)}}(ctx, updated{{capitalize (trimS .AppName)}}2)
+	err = {{.AppName}}App.Update{{capitalize (trimS .AppName)}}(ctx, updated{{capitalize (trimS .AppName)}}2)
 	assert.Nil(t, err)
 
 	// verify update email
-	got{{capitalize (trimS .AppName)}}3, err := usersApp.Get{{capitalize (trimS .AppName)}}(ctx, &dtos.Get{{capitalize (trimS .AppName)}}Params{ID: id})
+	got{{capitalize (trimS .AppName)}}3, err := {{.AppName}}App.Get{{capitalize (trimS .AppName)}}(ctx, &dtos.Get{{capitalize (trimS .AppName)}}Params{ID: id})
 	assert.Nil(t, err)
 	assert.NotNil(t, got{{capitalize (trimS .AppName)}}3)
 	assert.Equal(t, *updated{{capitalize (trimS .AppName)}}2.Email, got{{capitalize (trimS .AppName)}}3.Email)
+	{{end}}
 
 	// delete the {{trimS .AppName}}
-	err = usersApp.Delete{{capitalize (trimS .AppName)}}(ctx, &dtos.Delete{{capitalize (trimS .AppName)}}Params{
+	err = {{.AppName}}App.Delete{{capitalize (trimS .AppName)}}(ctx, &dtos.Delete{{capitalize (trimS .AppName)}}Params{
 		ID: got{{capitalize (trimS .AppName)}}3.ID,
 	})
 	assert.Nil(t, err)

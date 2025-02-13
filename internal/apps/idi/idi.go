@@ -75,7 +75,7 @@ func (i Idi) Create() error {
 		}
 	}
 
-	if len(i.appNames) != 0 {
+	if len(i.appNames) > 0 {
 		// ensure -ca command is executed from idi project folder
 		if i.projectName == i.none {
 			prjDir, err := i.idiProjectExists()
@@ -102,6 +102,9 @@ func (i Idi) Create() error {
 }
 
 func getAppNames(appNames string) []string {
+	if appNames == "" {
+		return []string{}
+	}
 	split := strings.Split(appNames, ",")
 	for i, s := range split {
 		split[i] = strings.TrimSpace(s)

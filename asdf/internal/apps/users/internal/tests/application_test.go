@@ -3,18 +3,15 @@ package users_test
 import (
 	"context"
 	"fmt"
-	
 	"regexp"
-	
 	"testing"
 	"time"
 
 	"asdf/internal/apps/users/internal/adapters/sqlite3"
 	"asdf/internal/apps/users/internal/application"
 
-	
 	"asdf/internal/apps/users/internal/application/domain"
-	
+
 	"asdf/internal/dtos"
 	"asdf/internal/lib"
 
@@ -29,7 +26,6 @@ type bvat struct {
 	length      int
 	allowLength bool
 }
-
 
 func createPasswordTests(t *testing.T) []bvat {
 	t.Helper()
@@ -119,7 +115,6 @@ func createUsernameTests(t *testing.T) []bvat {
 	return tests
 }
 
-
 func TestUsersDomain(t *testing.T) {
 	t.Parallel()
 
@@ -127,7 +122,12 @@ func TestUsersDomain(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := NewMockIUsersRepository(ctrl)
-	usersApp := application.New(rootApp, mockRepo)
+	mockRootApp := NewMockIApp(ctrl)
+	mockRootApp.EXPECT().Hash(gomock.Any()).DoAndReturn(func(plaintext string) (string, error) {
+		return randString(1), nil
+	}).AnyTimes()
+
+	usersApp := application.New(mockRootApp, mockRepo)
 	mockRepo.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
 
 	for _, v := range createUsernameTests(t) {
@@ -211,27 +211,22 @@ func TestUsersDomain(t *testing.T) {
 			}
 		})
 	}
-
 }
 
-
 func TestEmail(t *testing.T) {
-
-	invalidEmail:= "gAYhYemail.com"
-	validEmail:="gAYhY@email.com"
+	invalidEmail := "gAYhYemail.com"
+	validEmail := "gAYhY@email.com"
 
 	v := lib.NewValidator()
 	domain.IsValidEmail(v, invalidEmail)
 	err := v.Errors().(lib.ErrInvalidData).GetErrors()
 	assert.Equal(t, 1, len(err))
 
-	var emailRx = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+	emailRx := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
 	assert.False(t, emailRx.MatchString(invalidEmail))
 	assert.True(t, emailRx.MatchString(validEmail))
-
 }
-
 
 func TestUsersApplication(t *testing.T) {
 	t.Parallel()
@@ -246,14 +241,24 @@ func TestUsersApplication(t *testing.T) {
 
 	mockLogger := NewMockILogger(ctrl)
 	repo := sqlite3.NewRepository(dbConn, mockLogger)
-	usersApp := application.New(rootApp, repo)
+	usersApp := application.New(NewMockIApp(ctrl), repo)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	// create user
-	tu := createValidUser(t)
+	// create invalid user
+	tu := &dtos.CreateUserParams{
+		Username: "",
+		Email:    "",
+		Password: "",
+	}
 	id, err := usersApp.CreateUser(ctx, tu)
+	assert.NotNil(t, err, "want err, got nil", err)
+	assert.Negative(t, id)
+
+	// create user
+	tu = createValidUser(t)
+	id, err = usersApp.CreateUser(ctx, tu)
 	assert.Nilf(t, err, "email used %s", tu.Email)
 	assert.GreaterOrEqual(t, id, int64(1))
 
@@ -271,7 +276,7 @@ func TestUsersApplication(t *testing.T) {
 	// update user's username
 	updatedUser1 := &dtos.UpdateUserParams{
 		ID:       id,
-		Username: addrOfStr(randomUsername()),
+		Username: addrOfStr(randString(5)),
 	}
 	err = usersApp.UpdateUser(ctx, updatedUser1)
 	assert.Nil(t, err)
