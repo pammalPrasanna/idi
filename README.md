@@ -18,7 +18,8 @@
 <h4>Why Would I use this?</h4>
 
 - Well you don't have to, since it is highly opinionated and might be a overkill for some projects.
-- For zero or less opinionated scaffolders checkout the project below:
+- For zero or less opinionated sca
+- ffolders checkout the project below:
       - [autostrada](autostrada.dev) 
       - [go-blueprint](https://github.com/Melkeydev/go-blueprint) 
   
@@ -37,7 +38,7 @@
 </h4>
 
 ```bash
-go install github.com/pammalPrasanna/idi@latest
+go install github.com/pammalPrasanna/idi@v0.1.13
 ```
 
 This installs a go binary that will automatically bind to your $GOPATH
