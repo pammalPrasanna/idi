@@ -7,7 +7,6 @@ import (
 )
 
 func Main(rootApp lib.IApp) error {
-
 	users.InitApp(rootApp)
 
 	return rootApp.ServeHTTP()

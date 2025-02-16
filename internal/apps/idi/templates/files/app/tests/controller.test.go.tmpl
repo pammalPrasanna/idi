@@ -1,4 +1,4 @@
-package {{.AppName}}_test
+package {{(cleanName .AppName)}}_test
 
 import (
 	"bytes"
@@ -23,16 +23,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// GET /{{.AppName}}
+// GET /{{(cleanName .AppName)}}
 // 200, 500
 
-// GET /{{.AppName}}/:id
+// GET /{{(cleanName .AppName)}}/:id
 // 200, 404, 422, 500
 
-// PUT /{{.AppName}}/:id
+// PUT /{{(cleanName .AppName)}}/:id
 // 200, 400, 422, 500
 
-// DELETE /{{.AppName}}/:id
+// DELETE /{{(cleanName .AppName)}}/:id
 // 200, 404, 422, 500
 
 // Authentication tests
@@ -53,10 +53,10 @@ type restTc struct {
 }
 
 
-func createInvalid{{capitalize (trimS .AppName)}}Bytes(t *testing.T) []byte {
-	uj, err := json.Marshal(&dtos.Create{{capitalize (trimS .AppName)}}Params{
+func createInvalid{{capitalize (trimS (cleanName .AppName))}}Bytes(t *testing.T) []byte {
+	uj, err := json.Marshal(&dtos.Create{{capitalize (trimS (cleanName .AppName))}}Params{
 		Username: "",
-		{{if eq .AppName "users"}}
+		{{if eq (cleanName .AppName) "users"}}
 		Email:    "",
 		Password: "",
 		{{end}}
@@ -66,10 +66,10 @@ func createInvalid{{capitalize (trimS .AppName)}}Bytes(t *testing.T) []byte {
 	return uj
 }
 
-func createValid{{capitalize (trimS .AppName)}}Bytes(t *testing.T) []byte {
-	uj, err := json.Marshal(&dtos.Create{{capitalize (trimS .AppName)}}Params{
+func createValid{{capitalize (trimS (cleanName .AppName))}}Bytes(t *testing.T) []byte {
+	uj, err := json.Marshal(&dtos.Create{{capitalize (trimS (cleanName .AppName))}}Params{
 		Username: randString(5),
-		{{if eq .AppName "users"}}
+		{{if eq (cleanName .AppName) "users"}}
 		Email:    randomEmail(),
 		Password: randString(8),
 		{{end}}
@@ -82,14 +82,14 @@ func createValid{{capitalize (trimS .AppName)}}Bytes(t *testing.T) []byte {
 func createRESTTestCases(t *testing.T) []handlerTests {
 	t.Helper()
 
-	valid{{capitalize (trimS .AppName)}} := createValid{{capitalize (trimS .AppName)}}(t)
-	valid{{capitalize (trimS .AppName)}}Json, err := json.Marshal(valid{{capitalize (trimS .AppName)}})
+	valid{{capitalize (trimS (cleanName .AppName))}} := createValid{{capitalize (trimS (cleanName .AppName))}}(t)
+	valid{{capitalize (trimS (cleanName .AppName))}}Json, err := json.Marshal(valid{{capitalize (trimS (cleanName .AppName))}})
 	assert.Nil(t, err)
 
-	created{{capitalize (trimS .AppName)}} := &dtos.{{capitalize (trimS .AppName)}}{
+	created{{capitalize (trimS (cleanName .AppName))}} := &dtos.{{capitalize (trimS (cleanName .AppName))}}{
 		ID:        1,
 		Username:  randString(5),
-		{{if eq .AppName "{{.AppName}}"}}
+		{{if eq (cleanName .AppName) "{{(cleanName .AppName)}}"}}
 		Email:     randomEmail(),
 		{{end}}
 		CreatedAt: time.Now(),
@@ -97,215 +97,215 @@ func createRESTTestCases(t *testing.T) []handlerTests {
 	}
 	tc := []handlerTests{
 		{
-			url:    "/{{.AppName}}",
+			url:    "/{{(cleanName .AppName)}}",
 			method: http.MethodGet,
-			// GET /{{.AppName}}
+			// GET /{{(cleanName .AppName)}}
 			// 200, 200, 500
 			tests: []restTc{
 				{
-					tcName:         "find {{.AppName}} empty list",
-					schema:         find{{capitalize .AppName}}Schema200,
+					tcName:         "find {{(cleanName .AppName)}} empty list",
+					schema:         find{{capitalize (cleanName .AppName)}}Schema200,
 					expectedStatus: http.StatusOK,
-					targetUrl:      "/{{.AppName}}",
-					mockReturns:    []any{[]*dtos.{{capitalize (trimS .AppName)}}{}, nil},
+					targetUrl:      "/{{(cleanName .AppName)}}",
+					mockReturns:    []any{[]*dtos.{{capitalize (trimS (cleanName .AppName))}}{}, nil},
 				},
 				{
-					tcName:         "find {{.AppName}} with data",
-					schema:         find{{capitalize .AppName}}Schema200,
+					tcName:         "find {{(cleanName .AppName)}} with data",
+					schema:         find{{capitalize (cleanName .AppName)}}Schema200,
 					expectedStatus: http.StatusOK,
-					targetUrl:      "/{{.AppName}}",
-					mockReturns:    []any{[]*dtos.{{capitalize (trimS .AppName)}}{created{{capitalize (trimS .AppName)}}}, nil},
+					targetUrl:      "/{{(cleanName .AppName)}}",
+					mockReturns:    []any{[]*dtos.{{capitalize (trimS (cleanName .AppName))}}{created{{capitalize (trimS (cleanName .AppName))}}}, nil},
 				},
 				{
 					tcName:         "internal server error",
-					schema:         {{trimS .AppName}}Schema500,
+					schema:         {{trimS (cleanName .AppName)}}Schema500,
 					expectedStatus: http.StatusInternalServerError,
-					targetUrl:      "/{{.AppName}}",
+					targetUrl:      "/{{(cleanName .AppName)}}",
 					mockReturns:    []any{nil, errors.New("")},
 				},
 			},
 		},
 		{
-			url:    "/{{.AppName}}/:id",
+			url:    "/{{(cleanName .AppName)}}/:id",
 			method: http.MethodGet,
-			// GET /{{.AppName}}/:id
+			// GET /{{(cleanName .AppName)}}/:id
 			// 200, 404, 422, 500
 			tests: []restTc{
 				{
-					tcName:         "get {{trimS .AppName}} with id",
-					schema:         get{{capitalize (trimS .AppName)}}Schema200,
+					tcName:         "get {{trimS (cleanName .AppName)}} with id",
+					schema:         get{{capitalize (trimS (cleanName .AppName))}}Schema200,
 					expectedStatus: http.StatusOK,
-					targetUrl:      "/{{.AppName}}/1",
-					mockReturns:    []any{&dtos.{{capitalize (trimS .AppName)}}{ID: 1, Username: "qwer", Email: randomEmail(), CreatedAt: time.Now(), UpdatedAt: time.Now()}, nil},
+					targetUrl:      "/{{(cleanName .AppName)}}/1",
+					mockReturns:    []any{&dtos.{{capitalize (trimS (cleanName .AppName))}}{ID: 1, Username: "qwer", Email: randomEmail(), CreatedAt: time.Now(), UpdatedAt: time.Now()}, nil},
 				},
 				{
 					tcName:         "record not found",
-					schema:         {{trimS .AppName}}Schema404,
+					schema:         {{trimS (cleanName .AppName)}}Schema404,
 					expectedStatus: http.StatusNotFound,
-					targetUrl:      "/{{.AppName}}/10000",
+					targetUrl:      "/{{(cleanName .AppName)}}/10000",
 					mockReturns:    []any{nil, lib.ErrNoRecord},
 				},
 				{
 					tcName:         "invalid id",
-					schema:         {{trimS .AppName}}SchemaInvalidID422,
+					schema:         {{trimS (cleanName .AppName)}}SchemaInvalidID422,
 					expectedStatus: http.StatusUnprocessableEntity,
-					targetUrl:      "/{{.AppName}}/{{.ProjectName}}",
+					targetUrl:      "/{{(cleanName .AppName)}}/{{.ProjectName}}",
 					mockReturns:    nil,
 				},
 				{
 					tcName:         "internal server error",
-					schema:         {{trimS .AppName}}Schema500,
+					schema:         {{trimS (cleanName .AppName)}}Schema500,
 					expectedStatus: http.StatusInternalServerError,
-					targetUrl:      "/{{.AppName}}/1",
+					targetUrl:      "/{{(cleanName .AppName)}}/1",
 					mockReturns:    []any{nil, errors.New("")},
 				},
 			},
 		},
 		{
-			url:    "/{{.AppName}}",
+			url:    "/{{(cleanName .AppName)}}",
 			method: http.MethodPost,
-			// POST /{{.AppName}}
+			// POST /{{(cleanName .AppName)}}
 			// 201, 400, 422, 500
 			tests: []restTc{
 				{
-					tcName:         "create {{trimS .AppName}}",
-					schema:         post{{trimS .AppName}}Schema201,
+					tcName:         "create {{trimS (cleanName .AppName)}}",
+					schema:         post{{capitalize (trimS (cleanName .AppName))}}Schema201,
 					expectedStatus: http.StatusCreated,
-					body:           valid{{capitalize (trimS .AppName)}}Json,
-					targetUrl:      "/{{.AppName}}",
+					body:           valid{{capitalize (trimS (cleanName .AppName))}}Json,
+					targetUrl:      "/{{(cleanName .AppName)}}",
 					mockReturns:    []any{int64(1), nil},
 				},
 				{
 					tcName:         "malformed json",
-					schema:         {{trimS .AppName}}Schema400,
+					schema:         {{trimS (cleanName .AppName)}}Schema400,
 					expectedStatus: http.StatusBadRequest,
-					targetUrl:      "/{{.AppName}}",
+					targetUrl:      "/{{(cleanName .AppName)}}",
 					mockReturns:    []any{int64(1), nil},
 					body:           []byte(`{"username":}`),
 				},
 				{
 					tcName:         "validation errors",
-					schema:         {{trimS .AppName}}Schema422,
+					schema:         {{trimS (cleanName .AppName)}}Schema422,
 					expectedStatus: http.StatusUnprocessableEntity,
-					targetUrl:      "/{{.AppName}}",
+					targetUrl:      "/{{(cleanName .AppName)}}",
 					mockReturns: []any{
 						int64(-1), lib.ErrInvalidData{
 							"username": []string{},
-							{{if eq .AppName "users"}}
+							{{if eq (cleanName .AppName) "users"}}
 							"email":    []string{},
 							"password": []string{},
 							{{end}}
 						},
 					},
-					body: createInvalid{{capitalize (trimS .AppName)}}Bytes(t),
+					body: createInvalid{{capitalize (trimS (cleanName .AppName))}}Bytes(t),
 				},
 				{
 					tcName:         "internal server error",
-					schema:         {{trimS .AppName}}Schema500,
+					schema:         {{trimS (cleanName .AppName)}}Schema500,
 					expectedStatus: http.StatusInternalServerError,
-					targetUrl:      "/{{.AppName}}",
+					targetUrl:      "/{{(cleanName .AppName)}}",
 					mockReturns:    []any{int64(-1), errors.New("")},
-					body:           valid{{capitalize (trimS .AppName)}}Json,
+					body:           valid{{capitalize (trimS (cleanName .AppName))}}Json,
 				},
 			},
 		},
 		{
-			url:    "/{{.AppName}}/:id",
+			url:    "/{{(cleanName .AppName)}}/:id",
 			method: http.MethodPatch,
 			// 200, 400, 404, 422, 500
 			tests: []restTc{
 				{
 					tcName:         "successful patch",
-					schema:         patch{{capitalize (trimS .AppName)}}Schema200,
+					schema:         patch{{capitalize (trimS (cleanName .AppName))}}Schema200,
 					expectedStatus: http.StatusOK,
-					body:           valid{{capitalize (trimS .AppName)}}Json,
-					targetUrl:      "/{{.AppName}}/1",
+					body:           valid{{capitalize (trimS (cleanName .AppName))}}Json,
+					targetUrl:      "/{{(cleanName .AppName)}}/1",
 					mockReturns:    []any{nil},
 				},
 				{
 					tcName:         "malformed json",
-					schema:         {{trimS .AppName}}Schema400,
+					schema:         {{trimS (cleanName .AppName)}}Schema400,
 					expectedStatus: http.StatusBadRequest,
-					targetUrl:      "/{{.AppName}}/1",
+					targetUrl:      "/{{(cleanName .AppName)}}/1",
 					mockReturns:    []any{nil},
 					body:           []byte(`{"username":}`),
 				},
 				{
 					tcName:         "record not found",
-					schema:         {{trimS .AppName}}Schema404,
+					schema:         {{trimS (cleanName .AppName)}}Schema404,
 					expectedStatus: http.StatusNotFound,
-					targetUrl:      "/{{.AppName}}/10000",
+					targetUrl:      "/{{(cleanName .AppName)}}/10000",
 					mockReturns:    []any{lib.ErrNoRecord},
-					body:           createInvalid{{capitalize (trimS .AppName)}}Bytes(t),
+					body:           createInvalid{{capitalize (trimS (cleanName .AppName))}}Bytes(t),
 				},
 				{
 					tcName:         "invalid id",
-					schema:         {{trimS .AppName}}SchemaInvalidID422,
+					schema:         {{trimS (cleanName .AppName)}}SchemaInvalidID422,
 					expectedStatus: http.StatusUnprocessableEntity,
-					targetUrl:      "/{{.AppName}}/-1",
+					targetUrl:      "/{{(cleanName .AppName)}}/-1",
 					mockReturns:    []any{nil},
-					body:           createInvalid{{capitalize (trimS .AppName)}}Bytes(t),
+					body:           createInvalid{{capitalize (trimS (cleanName .AppName))}}Bytes(t),
 				},
 				{
 					tcName:         "validation errors",
-					schema:         {{trimS .AppName}}Schema422,
+					schema:         {{trimS (cleanName .AppName)}}Schema422,
 					expectedStatus: http.StatusUnprocessableEntity,
-					targetUrl:      "/{{.AppName}}/1",
+					targetUrl:      "/{{(cleanName .AppName)}}/1",
 					mockReturns: []any{
 						lib.ErrInvalidData{
 							"username": []string{},
-							{{if eq .AppName "users"}}
+							{{if eq (cleanName .AppName) "users"}}
 							"email":    []string{},
 							"password": []string{},
 							{{end}}
 						},
 					},
-					body: createInvalid{{capitalize (trimS .AppName)}}Bytes(t),
+					body: createInvalid{{capitalize (trimS (cleanName .AppName))}}Bytes(t),
 				},
 				{
 					tcName:         "internal server error",
-					schema:         {{trimS .AppName}}Schema500,
+					schema:         {{trimS (cleanName .AppName)}}Schema500,
 					expectedStatus: http.StatusInternalServerError,
-					targetUrl:      "/{{.AppName}}/1",
+					targetUrl:      "/{{(cleanName .AppName)}}/1",
 					mockReturns:    []any{errors.New("")},
-					body:           valid{{capitalize (trimS .AppName)}}Json,
+					body:           valid{{capitalize (trimS (cleanName .AppName))}}Json,
 				},
 			},
 		},
 		{
-			url:    "/{{.AppName}}/:id",
+			url:    "/{{(cleanName .AppName)}}/:id",
 			method: http.MethodDelete,
 			// 200, 400, 404, 422, 500
 			tests: []restTc{
 				{
 					tcName:         "successful delete",
-					schema:         delete{{capitalize (trimS .AppName)}}Schema200,
+					schema:         delete{{capitalize (trimS (cleanName .AppName))}}Schema200,
 					expectedStatus: http.StatusOK,
-					targetUrl:      "/{{.AppName}}/1",
+					targetUrl:      "/{{(cleanName .AppName)}}/1",
 					mockReturns:    []any{nil},
 				},
 				{
 					tcName:         "no record found",
-					schema:         {{trimS .AppName}}Schema404,
+					schema:         {{trimS (cleanName .AppName)}}Schema404,
 					expectedStatus: http.StatusNotFound,
-					targetUrl:      "/{{.AppName}}/10000",
+					targetUrl:      "/{{(cleanName .AppName)}}/10000",
 					mockReturns:    []any{lib.ErrNoRecord},
 				},
 				{
 					tcName:         "invalid id",
-					schema:         {{trimS .AppName}}SchemaInvalidID422,
+					schema:         {{trimS (cleanName .AppName)}}SchemaInvalidID422,
 					expectedStatus: http.StatusUnprocessableEntity,
-					targetUrl:      "/{{.AppName}}/-1",
+					targetUrl:      "/{{(cleanName .AppName)}}/-1",
 					mockReturns:    []any{nil},
-					body:           createInvalid{{capitalize (trimS .AppName)}}Bytes(t),
+					body:           createInvalid{{capitalize (trimS (cleanName .AppName))}}Bytes(t),
 				},
 				{
 					tcName:         "internal server error",
-					schema:         {{trimS .AppName}}Schema500,
+					schema:         {{trimS (cleanName .AppName)}}Schema500,
 					expectedStatus: http.StatusInternalServerError,
-					targetUrl:      "/{{.AppName}}/1",
+					targetUrl:      "/{{(cleanName .AppName)}}/1",
 					mockReturns:    []any{errors.New("")},
-					body:           valid{{capitalize (trimS .AppName)}}Json,
+					body:           valid{{capitalize (trimS (cleanName .AppName))}}Json,
 				},
 			},
 		},
@@ -333,7 +333,7 @@ func getResponseBody(t *testing.T, w *httptest.ResponseRecorder) []byte {
 }
 
 
-func Test{{capitalize .AppName}}Controller(t *testing.T) {
+func Test{{capitalize (cleanName .AppName)}}Controller(t *testing.T) {
 	t.Parallel()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -342,38 +342,38 @@ func Test{{capitalize .AppName}}Controller(t *testing.T) {
 		for _, tc := range handler.tests {
 			t.Run(fmt.Sprintf("-- SchemaValidation | %s  | %s %s - %d", tc.tcName, handler.method, handler.url, tc.expectedStatus), func(t *testing.T) {
 				t.Parallel()
-				mockApp := NewMockI{{capitalize .AppName}}(ctrl)
-				{{.AppName}}Controller := rest.New{{capitalize .AppName}}Controller(rootApp, mockApp)
+				mockApp := NewMockI{{capitalize (cleanName .AppName)}}(ctrl)
+				{{(cleanName .AppName)}}Controller := rest.New{{capitalize (cleanName .AppName)}}Controller(rootApp, mockApp)
 
 				router := httprouter.New()
 
 				switch {
-				case handler.method == http.MethodGet && handler.url == "/{{.AppName}}":
-					router.HandlerFunc(handler.method, handler.url, {{.AppName}}Controller.Find{{capitalize .AppName}}H)
+				case handler.method == http.MethodGet && handler.url == "/{{(cleanName .AppName)}}":
+					router.HandlerFunc(handler.method, handler.url, {{(cleanName .AppName)}}Controller.Find{{capitalize (cleanName .AppName)}}H)
 					if tc.mockReturns != nil {
-						mockApp.EXPECT().Find{{capitalize .AppName}}(gomock.Any(), gomock.Any()).Return(tc.mockReturns...).Times(1)
+						mockApp.EXPECT().Find{{capitalize (cleanName .AppName)}}(gomock.Any(), gomock.Any()).Return(tc.mockReturns...).Times(1)
 					}
-				case handler.method == http.MethodGet && handler.url == "/{{.AppName}}/:id":
-					router.HandlerFunc(handler.method, handler.url, {{.AppName}}Controller.Get{{capitalize (trimS .AppName)}}H)
+				case handler.method == http.MethodGet && handler.url == "/{{(cleanName .AppName)}}/:id":
+					router.HandlerFunc(handler.method, handler.url, {{(cleanName .AppName)}}Controller.Get{{capitalize (trimS (cleanName .AppName))}}H)
 					if tc.mockReturns != nil {
-						mockApp.EXPECT().Get{{capitalize (trimS .AppName)}}(gomock.Any(), gomock.Any()).Return(tc.mockReturns...).Times(1)
-					}
-
-				case handler.method == http.MethodPost && handler.url == "/{{.AppName}}":
-					router.HandlerFunc(handler.method, handler.url, {{.AppName}}Controller.Create{{capitalize (trimS .AppName)}}H)
-					if tc.mockReturns != nil {
-						mockApp.EXPECT().Create{{capitalize (trimS .AppName)}}(gomock.Any(), gomock.Any()).Return(tc.mockReturns...).Times(1)
-					}
-				case handler.method == http.MethodPatch && handler.url == "/{{.AppName}}/:id":
-					router.HandlerFunc(handler.method, handler.url, {{.AppName}}Controller.Patch{{capitalize (trimS .AppName)}}H)
-					if tc.mockReturns != nil {
-						mockApp.EXPECT().Update{{capitalize (trimS .AppName)}}(gomock.Any(), gomock.Any()).Return(tc.mockReturns...).Times(1)
+						mockApp.EXPECT().Get{{capitalize (trimS (cleanName .AppName))}}(gomock.Any(), gomock.Any()).Return(tc.mockReturns...).Times(1)
 					}
 
-				case handler.method == http.MethodDelete && handler.url == "/{{.AppName}}/:id":
-					router.HandlerFunc(handler.method, handler.url, {{.AppName}}Controller.Delete{{capitalize (trimS .AppName)}}H)
+				case handler.method == http.MethodPost && handler.url == "/{{(cleanName .AppName)}}":
+					router.HandlerFunc(handler.method, handler.url, {{(cleanName .AppName)}}Controller.Create{{capitalize (trimS (cleanName .AppName))}}H)
 					if tc.mockReturns != nil {
-						mockApp.EXPECT().Delete{{capitalize (trimS .AppName)}}(gomock.Any(), gomock.Any()).Return(tc.mockReturns...).Times(1)
+						mockApp.EXPECT().Create{{capitalize (trimS (cleanName .AppName))}}(gomock.Any(), gomock.Any()).Return(tc.mockReturns...).Times(1)
+					}
+				case handler.method == http.MethodPatch && handler.url == "/{{(cleanName .AppName)}}/:id":
+					router.HandlerFunc(handler.method, handler.url, {{(cleanName .AppName)}}Controller.Patch{{capitalize (trimS (cleanName .AppName))}}H)
+					if tc.mockReturns != nil {
+						mockApp.EXPECT().Update{{capitalize (trimS (cleanName .AppName))}}(gomock.Any(), gomock.Any()).Return(tc.mockReturns...).Times(1)
+					}
+
+				case handler.method == http.MethodDelete && handler.url == "/{{(cleanName .AppName)}}/:id":
+					router.HandlerFunc(handler.method, handler.url, {{(cleanName .AppName)}}Controller.Delete{{capitalize (trimS (cleanName .AppName))}}H)
+					if tc.mockReturns != nil {
+						mockApp.EXPECT().Delete{{capitalize (trimS (cleanName .AppName))}}(gomock.Any(), gomock.Any()).Return(tc.mockReturns...).Times(1)
 					}
 				}
 
@@ -394,7 +394,7 @@ func Test{{capitalize .AppName}}Controller(t *testing.T) {
 	}
 }
 
-func Test{{capitalize .AppName}}ControllerAPIIntegration(t *testing.T) {
+func Test{{capitalize (cleanName .AppName)}}ControllerAPIIntegration(t *testing.T) {
 	t.Parallel()
 	if !INTEGRATION_TESTS {
 		t.Errorf("skipping tests | INTEGRATION_TESTS = '%v'", INTEGRATION_TESTS)
@@ -405,80 +405,80 @@ func Test{{capitalize .AppName}}ControllerAPIIntegration(t *testing.T) {
 	defer ctrl.Finish()
 
 	repo := sqlite3.NewRepository(dbConn, NewMockILogger(ctrl))
-	{{.AppName}}App := application.New(rootApp, repo)
-	{{.AppName}}Controller := rest.New{{capitalize .AppName}}Controller(rootApp, {{.AppName}}App)
+	{{(cleanName .AppName)}}App := application.New(rootApp, repo)
+	{{(cleanName .AppName)}}Controller := rest.New{{capitalize (cleanName .AppName)}}Controller(rootApp, {{(cleanName .AppName)}}App)
 
 	router := httprouter.New()
-	router.HandlerFunc(http.MethodGet, "/{{.AppName}}", {{.AppName}}Controller.Find{{capitalize .AppName}}H)
-	router.HandlerFunc(http.MethodPost, "/{{.AppName}}", {{.AppName}}Controller.Create{{capitalize (trimS .AppName)}}H)
-	router.HandlerFunc(http.MethodGet, "/{{.AppName}}/:id", {{.AppName}}Controller.Get{{capitalize (trimS .AppName)}}H)
-	router.HandlerFunc(http.MethodPatch, "/{{.AppName}}/:id", {{.AppName}}Controller.Patch{{capitalize (trimS .AppName)}}H)
-	router.HandlerFunc(http.MethodDelete, "/{{.AppName}}/:id", {{.AppName}}Controller.Delete{{capitalize (trimS .AppName)}}H)
+	router.HandlerFunc(http.MethodGet, "/{{(cleanName .AppName)}}", {{(cleanName .AppName)}}Controller.Find{{capitalize (cleanName .AppName)}}H)
+	router.HandlerFunc(http.MethodPost, "/{{(cleanName .AppName)}}", {{(cleanName .AppName)}}Controller.Create{{capitalize (trimS (cleanName .AppName))}}H)
+	router.HandlerFunc(http.MethodGet, "/{{(cleanName .AppName)}}/:id", {{(cleanName .AppName)}}Controller.Get{{capitalize (trimS (cleanName .AppName))}}H)
+	router.HandlerFunc(http.MethodPatch, "/{{(cleanName .AppName)}}/:id", {{(cleanName .AppName)}}Controller.Patch{{capitalize (trimS (cleanName .AppName))}}H)
+	router.HandlerFunc(http.MethodDelete, "/{{(cleanName .AppName)}}/:id", {{(cleanName .AppName)}}Controller.Delete{{capitalize (trimS (cleanName .AppName))}}H)
 
-	// find {{.AppName}}
+	// find {{(cleanName .AppName)}}
 	rec := httptest.NewRecorder()
-	router.ServeHTTP(rec, createNewRequest(t, http.MethodGet, "/{{.AppName}}", nil))
+	router.ServeHTTP(rec, createNewRequest(t, http.MethodGet, "/{{(cleanName .AppName)}}", nil))
 
 	assert.Equal(t, http.StatusOK, rec.Result().StatusCode)
-	validateSchema(t, find{{capitalize .AppName}}Schema200, getResponseBody(t, rec))
+	validateSchema(t, find{{capitalize (cleanName .AppName)}}Schema200, getResponseBody(t, rec))
 
-	// create invalid {{trimS .AppName}}
+	// create invalid {{trimS (cleanName .AppName)}}
 	rec = httptest.NewRecorder()
-	req := createNewRequest(t, http.MethodPost, "/{{.AppName}}", createInvalid{{capitalize (trimS .AppName)}}Bytes(t))
+	req := createNewRequest(t, http.MethodPost, "/{{(cleanName .AppName)}}", createInvalid{{capitalize (trimS (cleanName .AppName))}}Bytes(t))
 	router.ServeHTTP(rec, req)
 
 	assert.Equal(t, http.StatusUnprocessableEntity, rec.Result().StatusCode)
-	validateSchema(t, {{trimS .AppName}}Schema422, getResponseBody(t, rec))
+	validateSchema(t, {{trimS (cleanName .AppName)}}Schema422, getResponseBody(t, rec))
 
-	// create valid {{trimS .AppName}}
+	// create valid {{trimS (cleanName .AppName)}}
 	rec = httptest.NewRecorder()
-	router.ServeHTTP(rec, createNewRequest(t, http.MethodPost, "/{{.AppName}}", createValid{{capitalize (trimS .AppName)}}Bytes(t)))
+	router.ServeHTTP(rec, createNewRequest(t, http.MethodPost, "/{{(cleanName .AppName)}}", createValid{{capitalize (trimS (cleanName .AppName))}}Bytes(t)))
 
 	assert.Equal(t, http.StatusCreated, rec.Result().StatusCode)
 	respBody := getResponseBody(t, rec)
-	validateSchema(t, post{{trimS .AppName}}Schema201, respBody)
+	validateSchema(t, post{{capitalize (trimS (cleanName .AppName))}}Schema201, respBody)
 
-	var cup *rest.Create{{capitalize (trimS .AppName)}}Response
+	var cup *rest.Create{{capitalize (trimS (cleanName .AppName))}}Response
 	assert.Nil(t, json.Unmarshal(respBody, &cup))
 
-	// get the created {{trimS .AppName}}
+	// get the created {{trimS (cleanName .AppName)}}
 	rec = httptest.NewRecorder()
-	router.ServeHTTP(rec, createNewRequest(t, http.MethodGet, fmt.Sprintf("/{{.AppName}}/%d", cup.{{capitalize (trimS .AppName)}}ID), nil))
+	router.ServeHTTP(rec, createNewRequest(t, http.MethodGet, fmt.Sprintf("/{{(cleanName .AppName)}}/%d", cup.{{capitalize (trimS (cleanName .AppName))}}ID), nil))
 
 	assert.Equal(t, http.StatusOK, rec.Result().StatusCode)
 	respBody = getResponseBody(t, rec)
-	validateSchema(t, get{{capitalize (trimS .AppName)}}Schema200, respBody)
+	validateSchema(t, get{{capitalize (trimS (cleanName .AppName))}}Schema200, respBody)
 
-	var created{{capitalize (trimS .AppName)}} *rest.Get{{capitalize (trimS .AppName)}}Response
-	assert.Nil(t, json.Unmarshal(respBody, &created{{capitalize (trimS .AppName)}}))
+	var created{{capitalize (trimS (cleanName .AppName))}} *rest.Get{{capitalize (trimS (cleanName .AppName))}}Response
+	assert.Nil(t, json.Unmarshal(respBody, &created{{capitalize (trimS (cleanName .AppName))}}))
 
-	// update {{trimS .AppName}}
+	// update {{trimS (cleanName .AppName)}}
 	rec = httptest.NewRecorder()
-	router.ServeHTTP(rec, createNewRequest(t, http.MethodPatch, fmt.Sprintf("/{{.AppName}}/%d", created{{capitalize (trimS .AppName)}}.{{capitalize (trimS .AppName)}}.ID), createValid{{capitalize (trimS .AppName)}}Bytes(t)))
-	assert.Equal(t, http.StatusOK, rec.Result().StatusCode, fmt.Sprintf("/{{.AppName}}/%d", created{{capitalize (trimS .AppName)}}.{{capitalize (trimS .AppName)}}.ID), created{{capitalize (trimS .AppName)}})
-	validateSchema(t, patch{{capitalize (trimS .AppName)}}Schema200, getResponseBody(t, rec))
+	router.ServeHTTP(rec, createNewRequest(t, http.MethodPatch, fmt.Sprintf("/{{(cleanName .AppName)}}/%d", created{{capitalize (trimS (cleanName .AppName))}}.{{capitalize (trimS (cleanName .AppName))}}.ID), createValid{{capitalize (trimS (cleanName .AppName))}}Bytes(t)))
+	assert.Equal(t, http.StatusOK, rec.Result().StatusCode, fmt.Sprintf("/{{(cleanName .AppName)}}/%d", created{{capitalize (trimS (cleanName .AppName))}}.{{capitalize (trimS (cleanName .AppName))}}.ID), created{{capitalize (trimS (cleanName .AppName))}})
+	validateSchema(t, patch{{capitalize (trimS (cleanName .AppName))}}Schema200, getResponseBody(t, rec))
 
 	// verify the update
 	rec = httptest.NewRecorder()
-	router.ServeHTTP(rec, createNewRequest(t, http.MethodGet, fmt.Sprintf("/{{.AppName}}/%d", created{{capitalize (trimS .AppName)}}.{{capitalize (trimS .AppName)}}.ID), nil))
+	router.ServeHTTP(rec, createNewRequest(t, http.MethodGet, fmt.Sprintf("/{{(cleanName .AppName)}}/%d", created{{capitalize (trimS (cleanName .AppName))}}.{{capitalize (trimS (cleanName .AppName))}}.ID), nil))
 	assert.Equal(t, http.StatusOK, rec.Result().StatusCode)
 	respBody = getResponseBody(t, rec)
-	validateSchema(t, get{{capitalize (trimS .AppName)}}Schema200, respBody)
+	validateSchema(t, get{{capitalize (trimS (cleanName .AppName))}}Schema200, respBody)
 
-	var updated{{capitalize (trimS .AppName)}} *rest.Get{{capitalize (trimS .AppName)}}Response
-	assert.Nil(t, json.Unmarshal(respBody, &updated{{capitalize (trimS .AppName)}}))
-	assert.NotEqual(t, "", cmp.Diff(created{{capitalize (trimS .AppName)}}, updated{{capitalize (trimS .AppName)}}))
+	var updated{{capitalize (trimS (cleanName .AppName))}} *rest.Get{{capitalize (trimS (cleanName .AppName))}}Response
+	assert.Nil(t, json.Unmarshal(respBody, &updated{{capitalize (trimS (cleanName .AppName))}}))
+	assert.NotEqual(t, "", cmp.Diff(created{{capitalize (trimS (cleanName .AppName))}}, updated{{capitalize (trimS (cleanName .AppName))}}))
 
-	// delete the {{trimS .AppName}}
+	// delete the {{trimS (cleanName .AppName)}}
 	rec = httptest.NewRecorder()
-	router.ServeHTTP(rec, createNewRequest(t, http.MethodDelete, fmt.Sprintf("/{{.AppName}}/%d", created{{capitalize (trimS .AppName)}}.{{capitalize (trimS .AppName)}}.ID), nil))
+	router.ServeHTTP(rec, createNewRequest(t, http.MethodDelete, fmt.Sprintf("/{{(cleanName .AppName)}}/%d", created{{capitalize (trimS (cleanName .AppName))}}.{{capitalize (trimS (cleanName .AppName))}}.ID), nil))
 	assert.Equal(t, http.StatusOK, rec.Result().StatusCode)
-	validateSchema(t, delete{{capitalize (trimS .AppName)}}Schema200, getResponseBody(t, rec))
+	validateSchema(t, delete{{capitalize (trimS (cleanName .AppName))}}Schema200, getResponseBody(t, rec))
 
 	// verify the delete
 	rec = httptest.NewRecorder()
-	router.ServeHTTP(rec, createNewRequest(t, http.MethodGet, fmt.Sprintf("/{{.AppName}}/%d", created{{capitalize (trimS .AppName)}}.{{capitalize (trimS .AppName)}}.ID), nil))
+	router.ServeHTTP(rec, createNewRequest(t, http.MethodGet, fmt.Sprintf("/{{(cleanName .AppName)}}/%d", created{{capitalize (trimS (cleanName .AppName))}}.{{capitalize (trimS (cleanName .AppName))}}.ID), nil))
 	assert.Equal(t, http.StatusNotFound, rec.Result().StatusCode)
 	respBody = getResponseBody(t, rec)
-	validateSchema(t, {{trimS .AppName}}Schema404, respBody)
+	validateSchema(t, {{trimS (cleanName .AppName)}}Schema404, respBody)
 }

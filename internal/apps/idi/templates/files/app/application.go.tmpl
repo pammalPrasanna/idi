@@ -10,53 +10,53 @@ import (
 )
 
 type (
-	{{ capitalize .AppName }} struct {
+	{{ capitalize (cleanName .AppName) }} struct {
 		RootApp  lib.IApp
 		{{if (ne .DBName "")}}
-		Repo ports.I{{capitalize .AppName}}Repository
+		Repo ports.I{{capitalize (cleanName .AppName)}}Repository
 		{{end}}
 
 	}
 	
-	I{{capitalize .AppName}} interface {
-		Get{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Get{{capitalize (trimS .AppName)}}Params) (todo *dtos.{{capitalize (trimS .AppName)}}, err error)
-		Find{{capitalize .AppName}}(ctx context.Context, arg *dtos.Find{{capitalize .AppName}}Params) ({{.AppName}} []*dtos.{{capitalize (trimS .AppName)}}, err error)
-		Create{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Create{{capitalize (trimS .AppName)}}Params) (id int64, err error)
-		Update{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Update{{capitalize (trimS .AppName)}}Params) error
-		Delete{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Delete{{capitalize (trimS .AppName)}}Params) error
+	I{{capitalize (cleanName .AppName)}} interface {
+		Get{{capitalize (trimS (cleanName .AppName))}}(ctx context.Context, arg *dtos.Get{{capitalize (trimS (cleanName .AppName))}}Params) (todo *dtos.{{capitalize (trimS (cleanName .AppName))}}, err error)
+		Find{{capitalize (cleanName .AppName)}}(ctx context.Context, arg *dtos.Find{{capitalize (cleanName .AppName)}}Params) ({{(cleanName .AppName)}} []*dtos.{{capitalize (trimS (cleanName .AppName))}}, err error)
+		Create{{capitalize (trimS (cleanName .AppName))}}(ctx context.Context, arg *dtos.Create{{capitalize (trimS (cleanName .AppName))}}Params) (id int64, err error)
+		Update{{capitalize (trimS (cleanName .AppName))}}(ctx context.Context, arg *dtos.Update{{capitalize (trimS (cleanName .AppName))}}Params) error
+		Delete{{capitalize (trimS (cleanName .AppName))}}(ctx context.Context, arg *dtos.Delete{{capitalize (trimS (cleanName .AppName))}}Params) error
 	}
 
 )
-var _ I{{capitalize .AppName}} = (*{{capitalize .AppName}})(nil)
+var _ I{{capitalize (cleanName .AppName)}} = (*{{capitalize (cleanName .AppName)}})(nil)
 
 {{if (ne .DBName "")}}
-func New(rootApp lib.IApp, db ports.I{{capitalize .AppName}}Repository) *{{capitalize .AppName}} {
-	return &{{capitalize .AppName}}{
+func New(rootApp lib.IApp, db ports.I{{capitalize (cleanName .AppName)}}Repository) *{{capitalize (cleanName .AppName)}} {
+	return &{{capitalize (cleanName .AppName)}}{
 		RootApp:  rootApp,
 		Repo: db,
 	}
 }
 {{else}}
-func New(rootApp lib.IApp) *{{capitalize .AppName}} {
-	return &{{capitalize .AppName}}{
+func New(rootApp lib.IApp) *{{capitalize (cleanName .AppName)}} {
+	return &{{capitalize (cleanName .AppName)}}{
 		RootApp:  rootApp,
 	}
 }
 {{end}}
 
 
-func (t *{{ capitalize .AppName }}) Get{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Get{{ capitalize (trimS .AppName) }}Params) ({{trimS .AppName}} *dtos.{{ capitalize (trimS .AppName) }}, err error) {
-	return t.Repo.Get{{capitalize (trimS .AppName)}}(ctx, arg)
+func (t *{{ capitalize (cleanName .AppName) }}) Get{{capitalize (trimS (cleanName .AppName))}}(ctx context.Context, arg *dtos.Get{{ capitalize (trimS (cleanName .AppName)) }}Params) ({{trimS (cleanName .AppName)}} *dtos.{{ capitalize (trimS (cleanName .AppName)) }}, err error) {
+	return t.Repo.Get{{capitalize (trimS (cleanName .AppName))}}(ctx, arg)
 }
 
-func (t *{{ capitalize .AppName }}) Find{{ capitalize .AppName }}(ctx context.Context, arg *dtos.Find{{ capitalize .AppName }}Params) ({{.AppName}} []*dtos.{{ capitalize (trimS .AppName) }}, err error) {
-	return t.Repo.Find{{capitalize .AppName}}(ctx, arg)
+func (t *{{ capitalize (cleanName .AppName) }}) Find{{ capitalize (cleanName .AppName) }}(ctx context.Context, arg *dtos.Find{{ capitalize (cleanName .AppName) }}Params) ({{(cleanName .AppName)}} []*dtos.{{ capitalize (trimS (cleanName .AppName)) }}, err error) {
+	return t.Repo.Find{{capitalize (cleanName .AppName)}}(ctx, arg)
 }
 
-func (t *{{ capitalize .AppName }}) Create{{ capitalize (trimS .AppName) }}(ctx context.Context, arg *dtos.Create{{ capitalize (trimS .AppName) }}Params) (id int64, err error) {
+func (t *{{ capitalize (cleanName .AppName) }}) Create{{ capitalize (trimS (cleanName .AppName)) }}(ctx context.Context, arg *dtos.Create{{ capitalize (trimS (cleanName .AppName)) }}Params) (id int64, err error) {
 	v := lib.NewValidator()
 	domain.IsValidUsername(v, arg.Username)
-	{{if eq .AppName "users"}}
+	{{if eq (cleanName .AppName) "users"}}
 	domain.IsValidEmail(v, arg.Email)
 	domain.IsValidPassword(v, arg.Password)
 	{{end}}
@@ -65,19 +65,19 @@ func (t *{{ capitalize .AppName }}) Create{{ capitalize (trimS .AppName) }}(ctx 
 		return -1, v.Errors()
 	}
 
-	{{if eq .AppName "users"}}
+	{{if eq (cleanName .AppName) "users"}}
 	arg.Password, _ = t.RootApp.Hash(arg.Password)
 	{{end}}
 
-	return t.Repo.Create{{capitalize (trimS .AppName)}}(ctx, arg)
+	return t.Repo.Create{{capitalize (trimS (cleanName .AppName))}}(ctx, arg)
 }
 
-func (t *{{ capitalize .AppName }}) Update{{ capitalize (trimS .AppName) }}(ctx context.Context, arg *dtos.Update{{ capitalize (trimS .AppName) }}Params) error {
+func (t *{{ capitalize (cleanName .AppName) }}) Update{{ capitalize (trimS (cleanName .AppName)) }}(ctx context.Context, arg *dtos.Update{{ capitalize (trimS (cleanName .AppName)) }}Params) error {
 	v := lib.NewValidator()
 	if arg.Username != nil {
 		domain.IsValidUsername(v, *arg.Username)
 	}
-	{{if eq .AppName "users"}}
+	{{if eq (cleanName .AppName) "users"}}
 	if arg.Email != nil {
 		domain.IsValidEmail(v, *arg.Email)
 	}
@@ -86,22 +86,22 @@ func (t *{{ capitalize .AppName }}) Update{{ capitalize (trimS .AppName) }}(ctx 
 		return v.Errors()
 	}
 
-	{{trimS .AppName}}, err := t.Repo.Get{{capitalize (trimS .AppName)}}(ctx, &dtos.Get{{capitalize (trimS .AppName)}}Params{ID: arg.ID})
+	{{trimS (cleanName .AppName)}}, err := t.Repo.Get{{capitalize (trimS (cleanName .AppName))}}(ctx, &dtos.Get{{capitalize (trimS (cleanName .AppName))}}Params{ID: arg.ID})
 	if err != nil {
 		return err
 	}
 
 	if arg.Username == nil {
-		arg.Username = &{{trimS .AppName}}.Username
+		arg.Username = &{{trimS (cleanName .AppName)}}.Username
 	}
-	{{if eq .AppName "users"}}
+	{{if eq (cleanName .AppName) "users"}}
 	if arg.Email == nil {
 		arg.Email = &user.Email
 	}
 	{{end}}
-	return t.Repo.Update{{capitalize (trimS .AppName)}}(ctx, arg)
+	return t.Repo.Update{{capitalize (trimS (cleanName .AppName))}}(ctx, arg)
 }
 
-func (t *{{ capitalize .AppName }}) Delete{{ capitalize (trimS .AppName) }}(ctx context.Context, arg *dtos.Delete{{ capitalize (trimS .AppName) }}Params) error {
-	return t.Repo.Delete{{ capitalize (trimS .AppName) }}(ctx, arg)
+func (t *{{ capitalize (cleanName .AppName) }}) Delete{{ capitalize (trimS (cleanName .AppName)) }}(ctx context.Context, arg *dtos.Delete{{ capitalize (trimS (cleanName .AppName)) }}Params) error {
+	return t.Repo.Delete{{ capitalize (trimS (cleanName .AppName)) }}(ctx, arg)
 }

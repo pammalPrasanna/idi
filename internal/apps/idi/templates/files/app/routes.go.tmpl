@@ -8,13 +8,13 @@ import (
 
 )
 
-func RegisterRoutes(rootApp lib.IApp, app *application.{{ capitalize .AppName }}) {
-	ctrlr := New{{ capitalize .AppName }}Controller(rootApp, app)
+func RegisterRoutes(rootApp lib.IApp, app *application.{{ capitalize (cleanName .AppName) }}) {
+	ctrlr := New{{ capitalize (cleanName .AppName) }}Controller(rootApp, app)
 	mux := ctrlr.Mux()
 
-	mux.HandlerFunc(http.MethodGet, "/{{.AppName}}", ctrlr.Find{{capitalize .AppName}}H)
-	mux.HandlerFunc(http.MethodGet, "/{{.AppName}}/:id", ctrlr.Get{{capitalize (trimS .AppName)}}H)
-	mux.HandlerFunc(http.MethodPost, "/{{.AppName}}", ctrlr.Create{{capitalize (trimS .AppName)}}H)
-	mux.HandlerFunc(http.MethodPatch, "/{{.AppName}}/:id", ctrlr.Patch{{capitalize (trimS .AppName)}}H)
-	mux.HandlerFunc(http.MethodDelete, "/{{.AppName}}/:id", ctrlr.Delete{{capitalize (trimS .AppName)}}H)
+	mux.HandlerFunc(http.MethodGet, "/{{(cleanName .AppName)}}", ctrlr.Find{{capitalize (cleanName .AppName)}}H)
+	mux.HandlerFunc(http.MethodGet, "/{{(cleanName .AppName)}}/:id", ctrlr.Get{{capitalize (trimS (cleanName .AppName))}}H)
+	mux.HandlerFunc(http.MethodPost, "/{{(cleanName .AppName)}}", ctrlr.Create{{capitalize (trimS (cleanName .AppName))}}H)
+	mux.HandlerFunc(http.MethodPatch, "/{{(cleanName .AppName)}}/:id", ctrlr.Patch{{capitalize (trimS (cleanName .AppName))}}H)
+	mux.HandlerFunc(http.MethodDelete, "/{{(cleanName .AppName)}}/:id", ctrlr.Delete{{capitalize (trimS (cleanName .AppName))}}H)
 }

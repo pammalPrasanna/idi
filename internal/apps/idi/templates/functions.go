@@ -25,8 +25,30 @@ func pathSep() string {
 	return string(os.PathSeparator)
 }
 
+func cleanName(txt string) string {
+	cleaner := func(t []string) string {
+		f := ""
+		for i, s := range t {
+			if i == 0 {
+				f += s
+				continue
+			}
+			f += capitalize(s)
+		}
+		return f
+	}
+
+	if strings.Contains(txt, "-") {
+		return cleaner(strings.Split(txt, "-"))
+	} else if strings.Contains(txt, "_") {
+		return cleaner(strings.Split(txt, "_"))
+	}
+	return txt
+}
+
 var templateFunctions = template.FuncMap{
 	"capitalize": capitalize,
 	"trimS":      trimS,
-	"pathSep": pathSep,
+	"pathSep":    pathSep,
+	"cleanName":  cleanName,
 }

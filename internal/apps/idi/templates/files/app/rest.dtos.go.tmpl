@@ -3,13 +3,13 @@ package rest
 import "{{.ProjectName}}/internal/dtos"
 
 type (
-	Find{{capitalize .AppName}}Response struct {
-		{{capitalize .AppName}} []*dtos.{{capitalize (trimS .AppName)}} `json:"{{.AppName}}"`
+	Find{{capitalize (cleanName .AppName)}}Response struct {
+		{{capitalize (cleanName .AppName)}} []*dtos.{{capitalize (trimS (cleanName .AppName))}} `json:"{{(cleanName .AppName)}}"`
 	}
-	Create{{capitalize (trimS .AppName)}}Response struct {
-		{{capitalize (trimS .AppName)}}ID int64 `json:"{{trimS .AppName}}_id"`
+	Create{{capitalize (trimS (cleanName .AppName))}}Response struct {
+		{{capitalize (trimS (cleanName .AppName))}}ID int64 `json:"{{trimS (cleanName .AppName)}}_id"`
 	}
-	Get{{capitalize (trimS .AppName)}}Response struct {
-		{{capitalize (trimS .AppName)}} *dtos.{{capitalize (trimS .AppName)}} `json:"{{trimS .AppName}}"`
+	Get{{capitalize (trimS (cleanName .AppName))}}Response struct {
+		{{capitalize (trimS (cleanName .AppName))}} *dtos.{{capitalize (trimS (cleanName .AppName))}} `json:"{{trimS (cleanName .AppName)}}"`
 	}
 )

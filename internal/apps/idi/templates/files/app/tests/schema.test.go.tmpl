@@ -1,4 +1,4 @@
-package {{trimS .AppName}}s_test
+package {{trimS (cleanName .AppName)}}s_test
 
 import (
 	"testing"
@@ -27,10 +27,10 @@ func validateSchema(t *testing.T, schema string, resp []byte) {
 
 
 
-const delete{{capitalize (trimS .AppName)}}Schema200 string = `
+const delete{{capitalize (trimS (cleanName .AppName))}}Schema200 string = `
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "patch{{capitalize (trimS .AppName)}}Schema200",
+  "title": "patch{{capitalize (trimS (cleanName .AppName))}}Schema200",
   "type": "object",
   "properties": {
     "message": {
@@ -43,10 +43,10 @@ const delete{{capitalize (trimS .AppName)}}Schema200 string = `
   ]
 }`
 
-const patch{{capitalize (trimS .AppName)}}Schema200 string = `
+const patch{{capitalize (trimS (cleanName .AppName))}}Schema200 string = `
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "patch{{capitalize (trimS .AppName)}}Schema200",
+  "title": "patch{{capitalize (trimS (cleanName .AppName))}}Schema200",
   "type": "object",
   "properties": {
     "message": {
@@ -59,10 +59,10 @@ const patch{{capitalize (trimS .AppName)}}Schema200 string = `
   ]
 }`
 
-const {{trimS .AppName}}Schema422 string = `
+const {{trimS (cleanName .AppName)}}Schema422 string = `
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "{{trimS .AppName}}Schema422",
+  "title": "{{trimS (cleanName .AppName)}}Schema422",
   "type": "object",
   "properties": {
     "errors": {
@@ -80,7 +80,7 @@ const {{trimS .AppName}}Schema422 string = `
             "type": "string"
           }
         }
-			{{if eq .AppName "users"}}
+			{{if eq (cleanName .AppName) "users"}}
         ,"email": {
           "type": "array",
           "items": {
@@ -92,7 +92,7 @@ const {{trimS .AppName}}Schema422 string = `
       "required": [
         "username",
         "password"
-		{{if eq .AppName "users"}}
+		{{if eq (cleanName .AppName) "users"}}
 		,"email"
 		{{end}}
       ]
@@ -104,27 +104,27 @@ const {{trimS .AppName}}Schema422 string = `
 }
 `
 
-const post{{capitalize (trimS .AppName)}}Schema201 string = `
+const post{{capitalize (trimS (cleanName .AppName))}}Schema201 string = `
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "post{{trimS .AppName}}Schema201",
+  "title": "post{{trimS (cleanName .AppName)}}Schema201",
   "type": "object",
   "properties": {
-    "{{trimS .AppName}}_id": {
+    "{{trimS (cleanName .AppName)}}_id": {
       "type": "number",
        "minimum": 1
     }
   },
   "required": [
-    "{{trimS .AppName}}_id"
+    "{{trimS (cleanName .AppName)}}_id"
   ]
 }
 `
 
-const {{trimS .AppName}}Schema400 string = `
+const {{trimS (cleanName .AppName)}}Schema400 string = `
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "{{trimS .AppName}}Schema400",
+  "title": "{{trimS (cleanName .AppName)}}Schema400",
   "type": "object",
   "properties": {
     "error": {
@@ -138,7 +138,7 @@ const {{trimS .AppName}}Schema400 string = `
 }
 `
 
-const {{trimS .AppName}}SchemaInvalidID422 string = `
+const {{trimS (cleanName .AppName)}}SchemaInvalidID422 string = `
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "schema422",
@@ -155,10 +155,10 @@ const {{trimS .AppName}}SchemaInvalidID422 string = `
 }
 `
 
-const {{trimS .AppName}}Schema404 string = `
+const {{trimS (cleanName .AppName)}}Schema404 string = `
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "{{trimS .AppName}}Schema404",
+  "title": "{{trimS (cleanName .AppName)}}Schema404",
   "type": "object",
   "properties": {
     "error": {
@@ -171,12 +171,12 @@ const {{trimS .AppName}}Schema404 string = `
   ]
 }`
 
-const get{{capitalize (trimS .AppName)}}Schema200 string = `{
+const get{{capitalize (trimS (cleanName .AppName))}}Schema200 string = `{
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "get{{capitalize (trimS .AppName)}}Schema200",
+  "title": "get{{capitalize (trimS (cleanName .AppName))}}Schema200",
   "type": "object",
   "properties": {
-    "{{trimS .AppName}}": {
+    "{{trimS (cleanName .AppName)}}": {
       "type": "object",
       "properties": {
         "id": {
@@ -185,7 +185,7 @@ const get{{capitalize (trimS .AppName)}}Schema200 string = `{
         "username": {
           "type": "string"
         },
-		{{if eq .AppName "users"}}
+		{{if eq (cleanName .AppName) "users"}}
         "email": {
           "type": "string"
         },
@@ -200,7 +200,7 @@ const get{{capitalize (trimS .AppName)}}Schema200 string = `{
       "required": [
         "id",
         "username",
-			{{if eq .AppName "users"}}
+			{{if eq (cleanName .AppName) "users"}}
         "email",
 		{{end}}
         "created_at",
@@ -209,14 +209,14 @@ const get{{capitalize (trimS .AppName)}}Schema200 string = `{
     }
   },
   "required": [
-    "{{trimS .AppName}}"
+    "{{trimS (cleanName .AppName)}}"
   ]
 }`
 
-const {{trimS .AppName}}Schema500 string = `
+const {{trimS (cleanName .AppName)}}Schema500 string = `
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "{{trimS .AppName}}Schema500",
+  "title": "{{trimS (cleanName .AppName)}}Schema500",
   "type": "object",
   "properties": {
     "error": {
@@ -229,13 +229,13 @@ const {{trimS .AppName}}Schema500 string = `
   ]
 }`
 
-const find{{capitalize .AppName}}Schema200 string = `
+const find{{capitalize (cleanName .AppName)}}Schema200 string = `
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "find{{capitalize .AppName}}Schema",
+  "title": "find{{capitalize (cleanName .AppName)}}Schema",
   "type": "object",
   "properties": {
-    "{{trimS .AppName}}s": {
+    "{{trimS (cleanName .AppName)}}s": {
       "type": "array",
       "items": {
         "type": "object",
@@ -246,7 +246,7 @@ const find{{capitalize .AppName}}Schema200 string = `
           "username": {
             "type": "string"
           },
-		  	{{if eq .AppName "users"}}
+		  	{{if eq (cleanName .AppName) "users"}}
           "email": {
             "type": "string"
           },
@@ -261,7 +261,7 @@ const find{{capitalize .AppName}}Schema200 string = `
         "required": [
           "id",
           "username",
-		  	{{if eq .AppName "users"}}
+		  	{{if eq (cleanName .AppName) "users"}}
           "email",
 		  {{end}}
           "created_at",
@@ -271,7 +271,7 @@ const find{{capitalize .AppName}}Schema200 string = `
     }
   },
   "required": [
-    "{{trimS .AppName}}s"
+    "{{trimS (cleanName .AppName)}}s"
   ]
 }
 `

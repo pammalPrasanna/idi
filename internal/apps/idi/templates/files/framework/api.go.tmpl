@@ -11,7 +11,7 @@ import (
 
 func Main(rootApp lib.IApp) error {
 	{{range .AppNames}}
-	{{.}}.InitApp(rootApp)
+	{{cleanName .}}.InitApp(rootApp)
 	{{else}} 	
 	// someapp.InitApp(rootApp)
 	{{end}}

@@ -1,4 +1,4 @@
-package {{.AppName}}
+package {{(cleanName .AppName)}}
 
 import (
 	rest "{{.ProjectName}}/internal/apps/{{.AppName}}/internal/adapters/{{.RouterName}}"
@@ -7,23 +7,23 @@ import (
 	"{{.ProjectName}}/internal/apps/{{.AppName}}/internal/application"
 )
 
-var {{.AppName}}App *application.{{capitalize .AppName}}
+var {{(cleanName .AppName)}}App *application.{{capitalize (cleanName .AppName)}}
 
-func {{ capitalize .AppName }}App() *application.{{ capitalize .AppName }} {
- 	return {{.AppName}}App
+func {{ capitalize (cleanName .AppName) }}App() *application.{{ capitalize (cleanName .AppName) }} {
+ 	return {{(cleanName .AppName)}}App
 }
 
 func InitApp(rootApp lib.IApp) {
 	{{if (ne .DBName "")}}
 		// create app repository
-		{{.AppName}}Repo := {{.DBName}}.NewRepository(rootApp.{{capitalize .DBName}}(), rootApp.Logger())
+		{{(cleanName .AppName)}}Repo := {{.DBName}}.NewRepository(rootApp.{{capitalize .DBName}}(), rootApp.Logger())
 		// create app with repository
-		{{.AppName}}App = application.New(rootApp, {{ .AppName }}Repo)
+		{{(cleanName .AppName)}}App = application.New(rootApp, {{ (cleanName .AppName) }}Repo)
 	{{else}}
-		{{.AppName}}App = application.New(rootApp)
+		{{(cleanName .AppName)}}App = application.New(rootApp)
 	{{end}}
 
 
 	// register routes if needed
-	rest.RegisterRoutes(rootApp, {{.AppName}}App)
+	rest.RegisterRoutes(rootApp, {{(cleanName .AppName)}}App)
 }

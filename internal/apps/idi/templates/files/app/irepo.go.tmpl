@@ -6,10 +6,10 @@ import (
 	"{{.ProjectName}}/internal/dtos"
 )
 
-type I{{capitalize .AppName}}Repository interface {
-	Get{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Get{{capitalize (trimS .AppName)}}Params) ({{trimS .AppName}} *dtos.{{capitalize (trimS .AppName)}}, err error)
-	Find{{capitalize .AppName}}(ctx context.Context, arg *dtos.Find{{capitalize .AppName}}Params) ({{.AppName}} []*dtos.{{capitalize (trimS .AppName)}}, err error)
-	Create{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Create{{capitalize (trimS .AppName)}}Params) (id int64, err error)
-	Update{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Update{{capitalize (trimS .AppName)}}Params) error
-	Delete{{capitalize (trimS .AppName)}}(ctx context.Context, arg *dtos.Delete{{capitalize (trimS .AppName)}}Params) error
+type I{{capitalize (cleanName .AppName)}}Repository interface {
+	Get{{capitalize (trimS (cleanName .AppName))}}(ctx context.Context, arg *dtos.Get{{capitalize (trimS (cleanName .AppName))}}Params) ({{trimS (cleanName .AppName)}} *dtos.{{capitalize (trimS (cleanName .AppName))}}, err error)
+	Find{{capitalize (cleanName .AppName)}}(ctx context.Context, arg *dtos.Find{{capitalize (cleanName .AppName)}}Params) ({{(cleanName .AppName)}} []*dtos.{{capitalize (trimS (cleanName .AppName))}}, err error)
+	Create{{capitalize (trimS (cleanName .AppName))}}(ctx context.Context, arg *dtos.Create{{capitalize (trimS (cleanName .AppName))}}Params) (id int64, err error)
+	Update{{capitalize (trimS (cleanName .AppName))}}(ctx context.Context, arg *dtos.Update{{capitalize (trimS (cleanName .AppName))}}Params) error
+	Delete{{capitalize (trimS (cleanName .AppName))}}(ctx context.Context, arg *dtos.Delete{{capitalize (trimS (cleanName .AppName))}}Params) error
 }

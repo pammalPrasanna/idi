@@ -10,57 +10,57 @@ import (
 	"{{.ProjectName}}/internal/lib"
 )
 
-type {{ capitalize .AppName }}Controller struct {
+type {{ capitalize (cleanName .AppName) }}Controller struct {
 	lib.IApp
-	app application.I{{ capitalize .AppName }}
+	app application.I{{ capitalize (cleanName .AppName) }}
 }
 
-func New{{ capitalize .AppName }}Controller(rootApp lib.IApp, app application.I{{ capitalize .AppName }}) *{{ capitalize .AppName }}Controller {
-	return &{{ capitalize .AppName }}Controller{
+func New{{ capitalize (cleanName .AppName) }}Controller(rootApp lib.IApp, app application.I{{ capitalize (cleanName .AppName) }}) *{{ capitalize (cleanName .AppName) }}Controller {
+	return &{{ capitalize (cleanName .AppName) }}Controller{
 		rootApp,
 		app,
 	}
 }
 
-func (tc *{{capitalize .AppName}}Controller) Find{{capitalize .AppName}}H(w http.ResponseWriter, r *http.Request) {
+func (tc *{{capitalize (cleanName .AppName)}}Controller) Find{{capitalize (cleanName .AppName)}}H(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), tc.ContextTime())
 	defer cancel()
 
-	// parse -->  page, sort, filter etc in Find{{capitalize .AppName}}Params
+	// parse -->  page, sort, filter etc in Find{{capitalize (cleanName .AppName)}}Params
 
-	{{.AppName}}, err := tc.app.Find{{capitalize .AppName}}(ctx, &dtos.Find{{capitalize .AppName}}Params{})
+	{{(cleanName .AppName)}}, err := tc.app.Find{{capitalize (cleanName .AppName)}}(ctx, &dtos.Find{{capitalize (cleanName .AppName)}}Params{})
 	if err != nil {
 		tc.handleError(w, r, err)
 		return
 	}
 
-	tc.JSON(w, http.StatusOK, &Find{{capitalize .AppName}}Response{
-		{{capitalize .AppName}}: {{.AppName}},
+	tc.JSON(w, http.StatusOK, &Find{{capitalize (cleanName .AppName)}}Response{
+		{{capitalize (cleanName .AppName)}}: {{(cleanName .AppName)}},
 	})
 }
 
-func (tc *{{capitalize .AppName}}Controller) Create{{capitalize (trimS .AppName)}}H(w http.ResponseWriter, r *http.Request) {
+func (tc *{{capitalize (cleanName .AppName)}}Controller) Create{{capitalize (trimS (cleanName .AppName))}}H(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), tc.ContextTime())
 	defer cancel()
 
-	args := &dtos.Create{{capitalize (trimS .AppName)}}Params{}
+	args := &dtos.Create{{capitalize (trimS (cleanName .AppName))}}Params{}
 	if err := tc.DecodeJSON(w, r, args); err != nil {
 		tc.handleError(w, r, err)
 		return
 	}
 
-	id, err := tc.app.Create{{capitalize (trimS .AppName)}}(ctx, args)
+	id, err := tc.app.Create{{capitalize (trimS (cleanName .AppName))}}(ctx, args)
 	if err != nil {
 		tc.handleError(w, r, err)
 		return
 	}
 
-	tc.JSON(w, http.StatusCreated, &Create{{capitalize (trimS .AppName)}}Response{
-		{{capitalize (trimS .AppName)}}ID: id,
+	tc.JSON(w, http.StatusCreated, &Create{{capitalize (trimS (cleanName .AppName))}}Response{
+		{{capitalize (trimS (cleanName .AppName))}}ID: id,
 	})
 }
 
-func (tc *{{capitalize .AppName}}Controller) Get{{capitalize (trimS .AppName)}}H(w http.ResponseWriter, r *http.Request) {
+func (tc *{{capitalize (cleanName .AppName)}}Controller) Get{{capitalize (trimS (cleanName .AppName))}}H(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), tc.ContextTime())
 	defer cancel()
 
@@ -70,7 +70,7 @@ func (tc *{{capitalize .AppName}}Controller) Get{{capitalize (trimS .AppName)}}H
 		return
 	}
 
-	{{trimS .AppName}}, err := tc.app.Get{{capitalize (trimS .AppName)}}(ctx, &dtos.Get{{capitalize (trimS .AppName)}}Params{
+	{{trimS (cleanName .AppName)}}, err := tc.app.Get{{capitalize (trimS (cleanName .AppName))}}(ctx, &dtos.Get{{capitalize (trimS (cleanName .AppName))}}Params{
 		ID: id,
 	})
 	if err != nil {
@@ -78,12 +78,12 @@ func (tc *{{capitalize .AppName}}Controller) Get{{capitalize (trimS .AppName)}}H
 		return
 	}
 
-	tc.JSON(w, http.StatusOK, &Get{{capitalize (trimS .AppName)}}Response{
-		{{capitalize (trimS .AppName)}}: {{trimS .AppName}},
+	tc.JSON(w, http.StatusOK, &Get{{capitalize (trimS (cleanName .AppName))}}Response{
+		{{capitalize (trimS (cleanName .AppName))}}: {{trimS (cleanName .AppName)}},
 	})
 }
 
-func (tc *{{capitalize .AppName}}Controller) Patch{{capitalize (trimS .AppName)}}H(w http.ResponseWriter, r *http.Request) {
+func (tc *{{capitalize (cleanName .AppName)}}Controller) Patch{{capitalize (trimS (cleanName .AppName))}}H(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), tc.ContextTime())
 	defer cancel()
 
@@ -93,14 +93,14 @@ func (tc *{{capitalize .AppName}}Controller) Patch{{capitalize (trimS .AppName)}
 		return
 	}
 
-	args := &dtos.Update{{capitalize (trimS .AppName)}}Params{}
+	args := &dtos.Update{{capitalize (trimS (cleanName .AppName))}}Params{}
 	if err := tc.DecodeJSON(w, r, args); err != nil {
 		tc.handleError(w, r, err)
 		return
 	}
 	args.ID = id
 
-	err = tc.app.Update{{capitalize (trimS .AppName)}}(ctx, args)
+	err = tc.app.Update{{capitalize (trimS (cleanName .AppName))}}(ctx, args)
 	if err != nil {
 		tc.handleError(w, r, err)
 		return
@@ -111,7 +111,7 @@ func (tc *{{capitalize .AppName}}Controller) Patch{{capitalize (trimS .AppName)}
 	})
 }
 
-func (tc *{{capitalize .AppName}}Controller) Delete{{capitalize (trimS .AppName)}}H(w http.ResponseWriter, r *http.Request) {
+func (tc *{{capitalize (cleanName .AppName)}}Controller) Delete{{capitalize (trimS (cleanName .AppName))}}H(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), tc.ContextTime())
 	defer cancel()
 
@@ -121,7 +121,7 @@ func (tc *{{capitalize .AppName}}Controller) Delete{{capitalize (trimS .AppName)
 		return
 	}
 
-	err = tc.app.Delete{{capitalize (trimS .AppName)}}(ctx, &dtos.Delete{{capitalize (trimS .AppName)}}Params{
+	err = tc.app.Delete{{capitalize (trimS (cleanName .AppName))}}(ctx, &dtos.Delete{{capitalize (trimS (cleanName .AppName))}}Params{
 		ID: id,
 	})
 	if err != nil {
@@ -135,7 +135,7 @@ func (tc *{{capitalize .AppName}}Controller) Delete{{capitalize (trimS .AppName)
 }
 
 
-func (tc *{{capitalize .AppName}}Controller) handleError(w http.ResponseWriter, r *http.Request, err error) {
+func (tc *{{capitalize (cleanName .AppName)}}Controller) handleError(w http.ResponseWriter, r *http.Request, err error) {
 	switch {
 	case errors.Is(err, lib.ErrInvalidParameterID):
 		tc.UnprocessableEntity(w, r, &dtos.HTTPErrMsg{

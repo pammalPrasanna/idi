@@ -3,7 +3,7 @@ package dtos
 import "time"
 
 type (
-	{{capitalize (trimS .AppName)}} struct {
+	{{capitalize (trimS (cleanName .AppName))}} struct {
 		ID             int64     `json:"id"`
 		Username       string    `json:"username"`
 		Email          string    `json:"email"`
@@ -11,22 +11,22 @@ type (
 		CreatedAt      time.Time `json:"created_at"`
 		UpdatedAt      time.Time `json:"updated_at"`
 	}
-	Get{{capitalize (trimS .AppName)}}Params struct {
+	Get{{capitalize (trimS (cleanName .AppName))}}Params struct {
 		ID    int64
 		Email string
 	}
-	Find{{capitalize .AppName}}Params  struct{}
-	Create{{capitalize (trimS .AppName)}}Params struct {
+	Find{{capitalize (cleanName .AppName)}}Params  struct{}
+	Create{{capitalize (trimS (cleanName .AppName))}}Params struct {
 		Username string `json:"username"`
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
-	Update{{capitalize (trimS .AppName)}}Params struct {
+	Update{{capitalize (trimS (cleanName .AppName))}}Params struct {
 		Username *string `json:"username"`
 		Email    *string `json:"email"`
 		ID       int64  `json:"id"`
 	}
-	Delete{{capitalize (trimS .AppName)}}Params struct {
+	Delete{{capitalize (trimS (cleanName .AppName))}}Params struct {
 		ID int64
 	}
 )
